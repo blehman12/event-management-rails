@@ -1,0 +1,12 @@
+RSVP Confirmation
+
+Hi <%= @user.first_name %>,
+
+Your RSVP for <%= @event.name %> has been confirmed!
+
+Event Details:
+- Date: <%= @event.event_date.strftime("%A, %B %d, %Y") %>
+- Location: <%= @event.venue.name %>
+- Your Status: <%= @participant.rsvp_status.humanize %>
+
+We look forward to seeing you there!

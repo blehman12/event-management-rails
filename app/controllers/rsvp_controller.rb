@@ -19,6 +19,10 @@ class RsvpController < ApplicationController
         rsvp_status: params[:status],
         responded_at: Time.current
       )
+      
+      # ADD THIS LINE HERE:
+      EventNotificationMailer.rsvp_confirmation(participant).deliver_now
+      
       redirect_to root_path, notice: "RSVP updated to #{params[:status].humanize}"
     else
       # Handle legacy single-event RSVP system
@@ -31,4 +35,4 @@ class RsvpController < ApplicationController
       end
     end
   end
-end
+end  # <-- This was missing!
