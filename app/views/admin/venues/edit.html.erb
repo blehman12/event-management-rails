@@ -1,0 +1,18 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Edit Venue: <%= @venue.name %></h2>
+  <div>
+    <%= link_to "View Venue", admin_venue_path(@venue), class: "btn btn-info me-2" %>
+    <%= link_to "Back to Venues", admin_venues_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>
+
+<%= render 'form', venue: @venue %>
+
+<div class="mt-4 text-center">
+  <% if @venue.events.empty? %>
+    <%= link_to "Delete Venue", admin_venue_path(@venue), method: :delete, 
+                confirm: "Are you sure?", class: "btn btn-danger" %>
+  <% else %>
+    <p class="text-muted">Cannot delete venue with existing events.</p>
+  <% end %>
+</div>

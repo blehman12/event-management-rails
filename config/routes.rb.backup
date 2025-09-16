@@ -1,0 +1,16 @@
+Rails.application.routes.draw do
+  devise_for :users
+  root 'dashboard#index'
+
+  namespace :admin do
+    root 'dashboard#index'
+    resources :users
+    resources :venues
+    resources :events do
+      resources :event_participants, except: [:new, :edit]
+    end
+  end
+
+  get 'dashboard', to: 'dashboard#index'
+  patch 'rsvp/:status', to: 'rsvp#update', as: :rsvp
+end

@@ -1,0 +1,134 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Bulk User Management</h2>
+  <div>
+    <%= link_to "Import CSV", import_form_admin_bulk_users_path, class: "btn btn-success me-2" %>
+    <%= link_to "Export CSV", export_csv_admin_bulk_users_path, class: "btn btn-info me-2" %>
+    <%= link_to "Back to Users", admin_users_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">
+    <h5>CSV Import Template</h5>
+  </div>
+  <div class="card-body">
+    <p>Your CSV file should have these headers (case-insensitive):</p>
+    <code>First Name, Last Name, Email, Phone, Company, Role, Text Capable</code>
+    <br><br>
+    <small class="text-muted">
+      <strong>Notes:</strong><br>
+      • First Name, Last Name, and Email are required<br>
+      • Role can be "admin" or "attendee" (defaults to attendee)<br>
+      • Text Capable can be "true", "yes", "1" for true, anything else for false<br>
+      • If password is not provided, defaults to "password123"
+    </small>
+  </div>
+</div>
+
+<%= form_with url: bulk_actions_admin_bulk_users_path, method: :post, local: true do |form| %>
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5>Select Users for Bulk Actions</h5>
+      <div>
+        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAll()">Select All</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="selectNone()">Select None</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <%= form.select :bulk_action, 
+              options_for_select([
+                ['Choose an action...', ''],
+                ['Delete Selected Users', 'delete'],
+                ['Promote to Admin', 'promote_to_admin'],
+                ['Demote to User', 'demote_to_user'],
+                ['Send Invitations', 'send_invites']
+              ]), 
+              {}, 
+              { class: "form-select", required: true } %>
+        </div>
+        <div class="col-md-6">
+          <%= form.submit "Execute Action", class: "btn btn-warning", 
+                          confirm: "Are you sure you want to execute this action on selected users?" %>
+        </div>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th width="50">
+                <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll()">
+              </th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Company</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @users.each do |user| %>
+              <tr>
+                <td>
+                  <%= check_box_tag "user_ids[]", user.id, 
+                                    @selected_users.include?(user.id.to_s), 
+                                    { class: "user-checkbox" } %>
+                </td>
+                <td>
+                  <%= link_to "#{user.first_name} #{user.last_name}", admin_user_path(user), class: "text-decoration-none" %>
+                  <% if user == current_user %>
+                    <span class="badge bg-info">You</span>
+                  <% end %>
+                </td>
+                <td><%= user.email %></td>
+                <td><%= user.company %></td>
+                <td>
+                  <% if user_is_admin?(user) %>
+                    <span class="badge bg-danger">Admin</span>
+                  <% else %>
+                    <span class="badge bg-secondary">User</span>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="badge bg-<%= (user.rsvp_status.to_s == 'yes' || user.rsvp_status.to_s == '1') ? 'success' : 'secondary' %>">
+                    <%= user.rsvp_status.respond_to?(:humanize) ? user.rsvp_status.humanize : user.rsvp_status.to_s.humanize %>
+                  </span>
+                  <% if user.respond_to?(:invited_at) && user.invited_at %>
+                    <small class="text-success">Invited</small>
+                  <% end %>
+                </td>
+                <td><%= user.created_at.strftime("%m/%d/%Y") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+function selectAll() {
+  document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+    checkbox.checked = true;
+  });
+  document.getElementById('select-all-checkbox').checked = true;
+}
+
+function selectNone() {
+  document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+    checkbox.checked = false;
+  });
+  document.getElementById('select-all-checkbox').checked = false;
+}
+
+function toggleSelectAll() {
+  const selectAllCheckbox = document.getElementById('select-all-checkbox');
+  document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+    checkbox.checked = selectAllCheckbox.checked;
+  });
+}
+</script>

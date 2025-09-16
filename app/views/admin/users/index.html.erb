@@ -1,0 +1,66 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Manage Users</h2>
+  <div>
+    <%= link_to "New User", new_admin_user_path, class: "btn btn-success me-2" %>
+    <%= link_to "Bulk Management", admin_bulk_users_path, class: "btn btn-warning me-2" %>
+    <%= link_to "Back to Dashboard", admin_root_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <% if @users.any? %>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Company</th>
+              <th>Role</th>
+              <th>Events</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @users.each do |user| %>
+              <tr>
+                <td>
+                  <%= link_to user.full_name, admin_user_path(user), class: "fw-bold text-decoration-none" %>
+                </td>
+                <td><%= user.email %></td>
+                <td><%= user.company %></td>
+                <td>
+                  <% if user.admin? %>
+                    <span class="badge bg-danger">Admin</span>
+                  <% else %>
+                    <span class="badge bg-secondary">User</span>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="badge bg-primary"><%= user.event_participants.count %></span>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <%= link_to "View", admin_user_path(user), class: "btn btn-outline-primary" %>
+                    <%= link_to "Edit", edit_admin_user_path(user), class: "btn btn-outline-secondary" %>
+                    <% unless user == current_user %>
+                      <%= link_to "Delete", admin_user_path(user), method: :delete, 
+                                  confirm: "Are you sure?", class: "btn btn-outline-danger" %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <h4 class="text-muted">No users found</h4>
+        <p class="text-muted">Create your first user to get started.</p>
+        <%= link_to "Create User", new_admin_user_path, class: "btn btn-success" %>
+      </div>
+    <% end %>
+  </div>
+</div>

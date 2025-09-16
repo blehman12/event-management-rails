@@ -1,0 +1,120 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Manage Participants: <%= @event.name %></h2>
+  <div>
+    <%= link_to "View Event", admin_event_path(@event), class: "btn btn-info me-2" %>
+    <%= link_to "Back to Events", admin_events_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5>Current Participants (<%= @participants.count %>)</h5>
+      </div>
+      <div class="card-body">
+        <% if @participants.any? %>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Company</th>
+                  <th>Role</th>
+                  <th>RSVP Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @participants.each do |participant| %>
+                  <tr>
+                    <td><%= participant.user.full_name %></td>
+                    <td><%= participant.user.company %></td>
+                    <td>
+                      <%= form_with(model: [:admin, @event, participant], local: true, method: :patch) do |form| %>
+                        <%= form.select :role, 
+                            options_for_select([
+                              ['Attendee', 'attendee'],
+                              ['Vendor', 'vendor'], 
+                              ['Organizer', 'organizer']
+                            ], participant.role),
+                            {}, 
+                            { class: "form-select form-select-sm", onchange: "this.form.submit();" } %>
+                      <% end %>
+                    </td>
+                    <td>
+                      <span class="badge bg-<%= participant.rsvp_status == 'yes' ? 'success' : participant.rsvp_status == 'maybe' ? 'warning' : participant.rsvp_status == 'no' ? 'danger' : 'secondary' %>">
+                        <%= participant.rsvp_status.humanize %>
+                      </span>
+                    </td>
+                    <td>
+                      <%= link_to "Remove", admin_event_event_participant_path(@event, participant), 
+                                  method: :delete, confirm: "Remove this participant?", 
+                                  class: "btn btn-outline-danger btn-sm" %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted">No participants yet.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5>Add Participant</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with(model: [:admin, @event, EventParticipant.new], local: true) do |form| %>
+          <div class="mb-3">
+            <%= form.label :user_id, "User", class: "form-label" %>
+            <%= form.select :user_id, 
+                options_from_collection_for_select(@users, :id, :full_name), 
+                { prompt: "Select a user" }, 
+                { class: "form-select", required: true } %>
+          </div>
+          
+          <div class="mb-3">
+            <%= form.label :role, class: "form-label" %>
+            <%= form.select :role, 
+                options_for_select([
+                  ['Attendee', 'attendee'],
+                  ['Vendor', 'vendor'],
+                  ['Organizer', 'organizer']
+                ]), 
+                {}, 
+                { class: "form-select" } %>
+          </div>
+          
+          <div class="mb-3">
+            <%= form.label :notes, class: "form-label" %>
+            <%= form.text_area :notes, class: "form-control", rows: 2 %>
+          </div>
+          
+          <div class="d-grid">
+            <%= form.submit "Add Participant", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6>Quick Stats</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>Organizers:</strong> <%= @participants.organizer.count %></p>
+        <p><strong>Vendors:</strong> <%= @participants.vendor.count %></p>
+        <p><strong>Attendees:</strong> <%= @participants.attendee.count %></p>
+        <hr>
+        <p><strong>Confirmed:</strong> <%= @participants.yes.count %></p>
+        <p><strong>Pending:</strong> <%= @participants.pending.count %></p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,102 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Admin Dashboard</h2>
+  <%= link_to "Back to Main Site", root_path, class: "btn btn-outline-secondary" %>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h6>Total Users</h6>
+        <h3 class="text-primary"><%= User.count %></h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h6>Total Events</h6>
+        <h3 class="text-info"><%= Event.count %></h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h6>Total Venues</h6>
+        <h3 class="text-warning"><%= Venue.count %></h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h6>Participants</h6>
+        <h3 class="text-success"><%= EventParticipant.count %></h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h6>Vendors</h6>
+        <h3 class="text-danger"><%= EventParticipant.vendor.count %></h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h6>Confirmed</h6>
+        <h3 class="text-secondary"><%= EventParticipant.yes.count %></h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5>Quick Actions</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <%= link_to "Manage Users", admin_users_path, class: "btn btn-primary w-100" %>
+          </div>
+          <div class="col-md-4 mb-3">
+            <%= link_to "Manage Events", admin_events_path, class: "btn btn-success w-100" %>
+          </div>
+          <div class="col-md-4 mb-3">
+            <%= link_to "Manage Venues", admin_venues_path, class: "btn btn-info w-100" %>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <%= link_to "New Event", new_admin_event_path, class: "btn btn-outline-success w-100" %>
+          </div>
+          <div class="col-md-6">
+            <%= link_to "New Venue", new_admin_venue_path, class: "btn btn-outline-info w-100" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h6>Recent Activity</h6>
+      </div>
+      <div class="card-body">
+        <% Event.order(created_at: :desc).limit(5).each do |event| %>
+          <div class="mb-2">
+            <small class="text-muted"><%= event.created_at.strftime("%m/%d") %></small><br>
+            <%= link_to event.name, admin_event_path(event), class: "text-decoration-none" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,60 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Manage Venues</h2>
+  <div>
+    <%= link_to "New Venue", new_admin_venue_path, class: "btn btn-success me-2" %>
+    <%= link_to "Back to Dashboard", admin_root_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <% if @venues.any? %>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Capacity</th>
+              <th>Events</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @venues.each do |venue| %>
+              <tr>
+                <td>
+                  <%= link_to venue.name, admin_venue_path(venue), class: "fw-bold text-decoration-none" %>
+                </td>
+                <td><%= truncate(venue.address, length: 50) %></td>
+                <td><span class="badge bg-info"><%= venue.capacity %></span></td>
+                <td>
+                  <span class="badge bg-primary"><%= venue.events_count %></span>
+                  <% if venue.upcoming_events.any? %>
+                    <small class="text-success">(<%= venue.upcoming_events.count %> upcoming)</small>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <%= link_to "View", admin_venue_path(venue), class: "btn btn-outline-primary" %>
+                    <%= link_to "Edit", edit_admin_venue_path(venue), class: "btn btn-outline-secondary" %>
+                    <% if venue.events.empty? %>
+                      <%= link_to "Delete", admin_venue_path(venue), method: :delete, 
+                                  confirm: "Are you sure?", class: "btn btn-outline-danger" %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <h4 class="text-muted">No venues found</h4>
+        <p class="text-muted">Create your first venue to get started.</p>
+        <%= link_to "Create Venue", new_admin_venue_path, class: "btn btn-success" %>
+      </div>
+    <% end %>
+  </div>
+</div>

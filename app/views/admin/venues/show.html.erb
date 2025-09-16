@@ -1,0 +1,70 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2><%= @venue.name %></h2>
+  <div>
+    <%= link_to "Edit Venue", edit_admin_venue_path(@venue), class: "btn btn-warning me-2" %>
+    <%= link_to "Back to Venues", admin_venues_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5>Venue Details</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Name:</strong> <%= @venue.name %></p>
+            <p><strong>Capacity:</strong> <%= @venue.capacity %> people</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Total Events:</strong> <%= @venue.events_count %></p>
+            <p><strong>Upcoming Events:</strong> <%= @upcoming_events.count %></p>
+          </div>
+        </div>
+        <div class="mt-3">
+          <strong>Address:</strong>
+          <p><%= simple_format(@venue.address) %></p>
+        </div>
+        <% if @venue.description.present? %>
+          <div class="mt-3">
+            <strong>Description:</strong>
+            <p><%= simple_format(@venue.description) %></p>
+          </div>
+        <% end %>
+        <% if @venue.contact_info.present? %>
+          <div class="mt-3">
+            <strong>Contact Information:</strong>
+            <p><%= simple_format(@venue.contact_info) %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h6>Upcoming Events</h6>
+      </div>
+      <div class="card-body">
+        <% if @upcoming_events.any? %>
+          <% @upcoming_events.each do |event| %>
+            <div class="mb-3 border-bottom pb-2">
+              <%= link_to event.name, admin_event_path(event), class: "fw-bold text-decoration-none" %>
+              <br>
+              <small class="text-muted">
+                <%= event.event_date&.strftime("%b %d, %Y") %>
+              </small>
+              <br>
+              <span class="badge bg-primary"><%= event.attendees_count %> / <%= event.max_attendees %></span>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">No upcoming events</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,6 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>New Event</h2>
+  <%= link_to "Back to Events", admin_events_path, class: "btn btn-outline-secondary" %>
+</div>
+
+<%= render 'form', event: @event %>

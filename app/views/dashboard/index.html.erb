@@ -1,0 +1,158 @@
+<div class="row">
+  <div class="col-md-8">
+    <% if defined?(@current_event) && @current_event %>
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between">
+          <h4><%= @current_event.name %></h4>
+          <% if defined?(@my_role) && @my_role == 'vendor' %>
+            <span class="badge bg-warning">Vendor</span>
+          <% elsif defined?(@my_role) && @my_role == 'organizer' %>
+            <span class="badge bg-success">Organizer</span>
+          <% end %>
+        </div>
+        <div class="card-body">
+          <p><strong>Date:</strong> <%= @current_event.event_date&.strftime("%A, %B %d, %Y") %></p>
+          <% if @current_event.respond_to?(:start_time) && @current_event.start_time %>
+            <p><strong>Time:</strong> <%= @current_event.start_time.strftime("%I:%M %p") %> - <%= @current_event.end_time&.strftime("%I:%M %p") %></p>
+          <% end %>
+          <% if @current_event.venue %>
+            <p><strong>Location:</strong> <%= @current_event.venue.respond_to?(:full_address) ? @current_event.venue.full_address : @current_event.venue.address %></p>
+          <% end %>
+          <% if @current_event.rsvp_deadline %>
+            <p><strong>RSVP Deadline:</strong> <%= @current_event.rsvp_deadline.strftime("%B %d, %Y at %I:%M %p") %></p>
+          <% end %>
+          <% if @current_event.description.present? %>
+            <p><strong>Description:</strong> <%= simple_format(@current_event.description) %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Your RSVP Status: 
+            <% 
+              status_class = case @user_rsvp_status.to_s
+                           when 'yes', '1' then 'success'
+                           when 'maybe', '3' then 'warning' 
+                           when 'no', '2' then 'danger'
+                           else 'secondary'
+                           end
+            %>
+            <span class="badge bg-<%= status_class %>">
+              <%= @user_rsvp_status.respond_to?(:humanize) ? @user_rsvp_status.humanize : @user_rsvp_status.to_s.humanize %>
+            </span>
+          </h5>
+        </div>
+        <div class="card-body">
+          <% unless defined?(@deadline_passed) && @deadline_passed %>
+            <div class="btn-group" role="group">
+              <%= button_to "Yes", rsvp_path('yes'), 
+                    params: { event_id: @current_event.id }, 
+                    method: :patch,
+                    class: "btn #{(@user_rsvp_status.to_s == 'yes' || @user_rsvp_status.to_s == '1') ? 'btn-success' : 'btn-outline-success'}" %>
+              <%= button_to "Maybe", rsvp_path('maybe'), 
+                    params: { event_id: @current_event.id }, 
+                    method: :patch,
+                    class: "btn #{(@user_rsvp_status.to_s == 'maybe' || @user_rsvp_status.to_s == '3') ? 'btn-warning' : 'btn-outline-warning'}" %>
+              <%= button_to "No", rsvp_path('no'), 
+                    params: { event_id: @current_event.id }, 
+                    method: :patch,
+                    class: "btn #{(@user_rsvp_status.to_s == 'no' || @user_rsvp_status.to_s == '2') ? 'btn-danger' : 'btn-outline-danger'}" %>
+            </div>
+            <div class="mt-2">
+              <small class="text-muted">
+                <% if @current_event.rsvp_deadline && @current_event.rsvp_deadline > Time.current %>
+                  <% days_left = ((@current_event.rsvp_deadline - Time.current) / 1.day).ceil %>
+                  <%= pluralize(days_left, 'day') %> left to RSVP
+                <% end %>
+              </small>
+            </div>
+          <% else %>
+            <p class="text-muted">RSVP deadline has passed.</p>
+          <% end %>
+        </div>
+      </div>
+    <% elsif defined?(@event) && @event %>
+      <!-- Legacy single event display -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4><%= @event.name %></h4>
+        </div>
+        <div class="card-body">
+          <p><strong>Date:</strong> <%= @event.event_date&.strftime("%A, %B %d, %Y") || "September 20th, 2024" %></p>
+          <% if @event.venue %>
+            <p><strong>Location:</strong> <%= @event.venue.respond_to?(:full_address) ? @event.venue.full_address : @event.venue.address %></p>
+          <% end %>
+          <p><strong>Description:</strong> <%= @event.description || "Join the PTC Windchill community!" %></p>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Your RSVP Status: 
+            <span class="badge bg-secondary"><%= @user_rsvp_status.respond_to?(:humanize) ? @user_rsvp_status.humanize : @user_rsvp_status.to_s.humanize %></span>
+          </h5>
+        </div>
+        <div class="card-body">
+          <% unless defined?(@deadline_passed) && @deadline_passed %>
+            <div class="btn-group" role="group">
+              <%= button_to "Yes", rsvp_path('yes'), method: :patch, class: "btn btn-success" %>
+              <%= button_to "Maybe", rsvp_path('maybe'), method: :patch, class: "btn btn-warning" %>
+              <%= button_to "No", rsvp_path('no'), method: :patch, class: "btn btn-outline-danger" %>
+            </div>
+          <% else %>
+            <p class="text-muted">RSVP deadline has passed.</p>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <div class="alert alert-info">
+        <h4>Event details coming soon!</h4>
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5>Your Profile</h5>
+      </div>
+      <div class="card-body">
+        <p><strong>Name:</strong> <%= current_user.respond_to?(:full_name) ? current_user.full_name : "#{current_user.first_name} #{current_user.last_name}" %></p>
+        <p><strong>Email:</strong> <%= current_user.email %></p>
+        <p><strong>Company:</strong> <%= current_user.company %></p>
+        <% if current_user.phone %>
+          <p><strong>Phone:</strong> <%= current_user.phone %></p>
+        <% end %>
+      </div>
+    </div>
+
+    <% if defined?(@my_events) && @my_events&.any? %>
+      <div class="card">
+        <div class="card-header">
+          <h6>My Events</h6>
+        </div>
+        <div class="card-body">
+          <% @my_events.each do |event| %>
+            <% participant = current_user.event_participants.find_by(event: event) if current_user.respond_to?(:event_participants) %>
+            <div class="mb-2">
+              <strong><%= event.name %></strong><br>
+              <small class="text-muted"><%= event.event_date&.strftime("%b %d") %></small>
+              <% if participant %>
+                <br>
+                <span class="badge bg-<%= (participant.rsvp_status.to_s == 'yes' || participant.rsvp_status.to_s == '1') ? 'success' : 'secondary' %>">
+                  <%= participant.rsvp_status.respond_to?(:humanize) ? participant.rsvp_status.humanize : participant.rsvp_status.to_s.humanize %>
+                </span>
+                <% if participant.role.to_s == 'vendor' || participant.role.to_s == '1' %>
+                  <span class="badge bg-warning">Vendor</span>
+                <% elsif participant.role.to_s == 'organizer' || participant.role.to_s == '2' %>
+                  <span class="badge bg-success">Organizer</span>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
