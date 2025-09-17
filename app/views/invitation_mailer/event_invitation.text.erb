@@ -1,0 +1,19 @@
+Hello <%= @user.first_name %>,
+
+You're invited to join us for: <%= @event.name %>
+
+Event Details:
+- Date: <%= @event.event_date.strftime("%A, %B %d, %Y") %>
+<% if @event.start_time %>- Time: <%= @event.start_time.strftime("%I:%M %p") %><% end %>
+<% if @event.venue %>- Location: <%= @event.venue.name %>
+- Address: <%= @event.venue.address %><% end %>
+<% if @event.rsvp_deadline %>- RSVP Deadline: <%= @event.rsvp_deadline.strftime("%B %d, %Y") %><% end %>
+
+<% if @event.description.present? %>
+Description:
+<%= @event.description %>
+<% end %>
+
+Please RSVP at: <%= @rsvp_url %>
+
+We look forward to seeing you there!

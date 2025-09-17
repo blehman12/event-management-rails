@@ -1,0 +1,139 @@
+<!-- Create app/views/checkin/verify.html.erb -->
+
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <% if @status == 'invalid' %>
+        <!-- Invalid QR Code -->
+        <div class="card border-danger">
+          <div class="card-header bg-danger text-white text-center">
+            <h4 class="mb-0">Invalid QR Code</h4>
+          </div>
+          <div class="card-body text-center">
+            <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+            <h5>Check-in Not Available</h5>
+            <p><%= @message %></p>
+            <p class="text-muted">Please contact event staff for assistance.</p>
+          </div>
+        </div>
+
+      <% elsif @status == 'already_checked_in' %>
+        <!-- Already Checked In -->
+        <div class="card border-success">
+          <div class="card-header bg-success text-white text-center">
+            <h4 class="mb-0">Already Checked In</h4>
+          </div>
+          <div class="card-body text-center">
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+            <h5>Welcome to <%= @event.name %></h5>
+            <p><strong><%= @user.first_name %> <%= @user.last_name %></strong></p>
+            <p><%= @message %></p>
+            
+            <div class="alert alert-info mt-3">
+              <strong>Event Details:</strong><br>
+              <% if @event.event_date %>
+                Date: <%= @event.event_date.strftime("%A, %B %d, %Y") %><br>
+              <% end %>
+              <% if @event.start_time %>
+                Time: <%= @event.start_time.strftime("%I:%M %p") %><br>
+              <% end %>
+              <% if @event.venue %>
+                Location: <%= @event.venue.name %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+      <% elsif @status == 'ready' %>
+        <!-- Ready to Check In -->
+        <div class="card border-primary">
+          <div class="card-header bg-primary text-white text-center">
+            <h4 class="mb-0"><%= @event.name %></h4>
+          </div>
+          <div class="card-body text-center">
+            <h5>Check-in Confirmation</h5>
+            <p><strong><%= @user.first_name %> <%= @user.last_name %></strong></p>
+            <p class="text-muted"><%= @user.email %></p>
+            
+            <div class="alert alert-info">
+              <strong>Event Details:</strong><br>
+              <% if @event.event_date %>
+                Date: <%= @event.event_date.strftime("%A, %B %d, %Y") %><br>
+              <% end %>
+              <% if @event.start_time %>
+                Time: <%= @event.start_time.strftime("%I:%M %p") %><br>
+              <% end %>
+              <% if @event.venue %>
+                Location: <%= @event.venue.name %><br>
+                <small><%= @event.venue.address %></small>
+              <% end %>
+            </div>
+            
+            <p class="mb-4"><%= @message %></p>
+            
+            <!-- Check-in Form -->
+            <%= form_with url: checkin_process_path, method: :post, local: true, class: "d-grid" do |form| %>
+              <%= form.hidden_field :token, value: @token %>
+              <%= form.hidden_field :event_id, value: @event_id %>
+              <%= form.hidden_field :participant_id, value: @participant_id %>
+              
+              <%= form.submit "Check In Now", 
+                    class: "btn btn-success btn-lg", 
+                    data: { confirm: "Confirm check-in for #{@user.first_name} #{@user.last_name}?" } %>
+            <% end %>
+            
+            <p class="mt-3">
+              <small class="text-muted">
+                Having trouble? Contact event staff for assistance.
+              </small>
+            </p>
+          </div>
+        </div>
+      <% end %>
+      
+      <!-- Back to Event Info -->
+      <div class="text-center mt-3">
+        <% if @event %>
+          <p class="text-muted">
+            <small>Event ID: <%= @event.id %> | Check-in System</small>
+          </p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Mobile-friendly styles */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .card {
+    margin: 10px 0;
+  }
+  
+  .btn-lg {
+    padding: 15px 30px;
+    font-size: 18px;
+  }
+}
+
+/* Make buttons more touch-friendly */
+.btn {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* High contrast for accessibility */
+.card-header {
+  font-weight: bold;
+}
+
+.alert {
+  text-align: left;
+}
+</style>

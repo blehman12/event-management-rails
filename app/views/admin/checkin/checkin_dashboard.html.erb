@@ -1,0 +1,296 @@
+<!-- Create app/views/admin/checkin/checkin_dashboard.html.erb -->
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Check-in Dashboard: <%= @event.name %></h1>
+        <div>
+          <%= link_to "Generate QR Codes", generate_qr_codes_admin_event_path(@event), class: "btn btn-primary" %>
+          <%= link_to "Bulk Check-in", bulk_checkin_admin_event_path(@event), class: "btn btn-outline-primary" %>
+          <%= link_to "Export Data", export_checkin_data_admin_event_path(@event), class: "btn btn-success" %>
+        </div>
+      </div>
+
+      <!-- Live Statistics -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card text-center border-success">
+            <div class="card-body">
+              <h2 class="text-success" id="checked-in-count"><%= @checked_in_count %></h2>
+              <h6>Checked In</h6>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center border-primary">
+            <div class="card-body">
+              <h2 class="text-primary" id="total-rsvped"><%= @total_rsvped %></h2>
+              <h6>Total RSVP'd</h6>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center border-warning">
+            <div class="card-body">
+              <h2 class="text-warning"><%= @not_checked_in.count %></h2>
+              <h6>Not Checked In</h6>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center border-info">
+            <div class="card-body">
+              <h2 class="text-info"><%= @total_rsvped > 0 ? (@checked_in_count * 100.0 / @total_rsvped).round(1) : 0 %>%</h2>
+              <h6>Attendance Rate</h6>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Recent Check-ins -->
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Recent Check-ins</h5>
+              <button class="btn btn-sm btn-outline-secondary" id="refresh-recent">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+              <div id="recent-checkins-list">
+                <% if @recent_checkins.any? %>
+                  <% @recent_checkins.each do |participant| %>
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                      <div>
+                        <strong><%= participant.user.first_name %> <%= participant.user.last_name %></strong>
+                        <br>
+                        <small class="text-muted"><%= participant.user.email %></small>
+                      </div>
+                      <div class="text-end">
+                        <div class="badge bg-success"><%= participant.check_in_method_text %></div>
+                        <br>
+                        <small><%= participant.checked_in_at.strftime('%I:%M %p') %></small>
+                      </div>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <div class="text-center text-muted">
+                    <p>No check-ins yet</p>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Not Checked In -->
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Awaiting Check-in (<%= @not_checked_in.count %>)</h5>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+              <% if @not_checked_in.any? %>
+                <% @not_checked_in.each do |participant| %>
+                  <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                    <div>
+                      <strong><%= participant.user.first_name %> <%= participant.user.last_name %></strong>
+                      <br>
+                      <small class="text-muted"><%= participant.user.email %></small>
+                    </div>
+                    <div class="text-end">
+                      <span class="badge bg-<%= participant.rsvp_status == 'yes' ? 'success' : 'warning' %>">
+                        <%= participant.rsvp_status_text %>
+                      </span>
+                      <br>
+                      <button class="btn btn-sm btn-outline-primary mt-1" 
+                              onclick="quickCheckin(<%= participant.id %>)">
+                        Quick Check-in
+                      </button>
+                    </div>
+                  </div>
+                <% end %>
+              <% else %>
+                <div class="text-center text-muted">
+                  <p>Everyone is checked in!</p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All Participants Table -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="mb-0">All Participants</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>RSVP Status</th>
+                  <th>Check-in Status</th>
+                  <th>Check-in Time</th>
+                  <th>Method</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @participants.each do |participant| %>
+                  <tr class="<%= participant.checked_in? ? 'table-success' : '' %>">
+                    <td>
+                      <strong><%= participant.user.first_name %> <%= participant.user.last_name %></strong>
+                    </td>
+                    <td><%= participant.user.email %></td>
+                    <td>
+                      <span class="badge bg-<%= participant.rsvp_status == 'yes' ? 'success' : participant.rsvp_status == 'maybe' ? 'warning' : 'secondary' %>">
+                        <%= participant.rsvp_status_text %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if participant.checked_in? %>
+                        <span class="badge bg-success">Checked In</span>
+                      <% else %>
+                        <span class="badge bg-warning">Not Checked In</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= participant.checked_in? ? participant.checked_in_at.strftime('%m/%d/%Y %I:%M %p') : '-' %>
+                    </td>
+                    <td>
+                      <%= participant.checked_in? ? participant.check_in_method_text : '-' %>
+                    </td>
+                    <td>
+                      <% if participant.checked_in? %>
+                        <button class="btn btn-sm btn-outline-warning" 
+                                onclick="undoCheckin(<%= participant.id %>)">
+                          Undo Check-in
+                        </button>
+                      <% else %>
+                        <button class="btn btn-sm btn-outline-success" 
+                                onclick="quickCheckin(<%= participant.id %>)">
+                          Check In
+                        </button>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Auto-refresh and Quick Actions JavaScript -->
+<script>
+let autoRefreshInterval;
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-refresh every 30 seconds
+  startAutoRefresh();
+  
+  // Manual refresh button
+  document.getElementById('refresh-recent').addEventListener('click', function() {
+    refreshStats();
+  });
+});
+
+function startAutoRefresh() {
+  autoRefreshInterval = setInterval(refreshStats, 30000); // 30 seconds
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
+}
+
+function refreshStats() {
+  fetch('<%= dashboard_stats_admin_event_path(@event) %>')
+    .then(response => response.json())
+    .then(data => {
+      // Update counts
+      document.getElementById('checked-in-count').textContent = data.checked_in_count;
+      document.getElementById('total-rsvped').textContent = data.total_rsvped;
+      
+      // Update recent check-ins
+      const recentList = document.getElementById('recent-checkins-list');
+      if (data.recent_checkins.length > 0) {
+        recentList.innerHTML = data.recent_checkins.map(checkin => `
+          <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+            <div>
+              <strong>${checkin.name}</strong>
+            </div>
+            <div class="text-end">
+              <div class="badge bg-success">${checkin.method}</div>
+              <br>
+              <small>${checkin.time}</small>
+            </div>
+          </div>
+        `).join('');
+      }
+    })
+    .catch(error => console.error('Error refreshing stats:', error));
+}
+
+function quickCheckin(participantId) {
+  if (confirm('Check in this participant?')) {
+    fetch(`/admin/events/<%= @event.id %>/participants/${participantId}/checkin`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ method: 'manual' })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload(); // Refresh page to show updated status
+      } else {
+        alert('Check-in failed: ' + data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Check-in failed');
+    });
+  }
+}
+
+function undoCheckin(participantId) {
+  if (confirm('Undo check-in for this participant?')) {
+    fetch(`/admin/events/<%= @event.id %>/participants/${participantId}/undo_checkin`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload(); // Refresh page to show updated status
+      } else {
+        alert('Undo failed: ' + data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Undo failed');
+    });
+  }
+}
+
+// Stop auto-refresh when user leaves the page
+window.addEventListener('beforeunload', stopAutoRefresh);
+</script>

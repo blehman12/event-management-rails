@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f8f9fa; }
+        .event-details { background: white; padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .rsvp-button { display: inline-block; background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>You're Invited!</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hello <%= @user.first_name %>,</p>
+            
+            <p>You're invited to join us for an exciting event:</p>
+            
+            <div class="event-details">
+                <h2><%= @event.name %></h2>
+                <p><strong>Date:</strong> <%= @event.event_date.strftime("%A, %B %d, %Y") %></p>
+                <% if @event.start_time %>
+                <p><strong>Time:</strong> <%= @event.start_time.strftime("%I:%M %p") %></p>
+                <% end %>
+                <% if @event.venue %>
+                <p><strong>Location:</strong> <%= @event.venue.name %></p>
+                <p><strong>Address:</strong> <%= @event.venue.address %></p>
+                <% end %>
+                <% if @event.description.present? %>
+                <p><strong>Description:</strong> <%= simple_format(@event.description) %></p>
+                <% end %>
+                <% if @event.rsvp_deadline %>
+                <p><strong>RSVP Deadline:</strong> <%= @event.rsvp_deadline.strftime("%B %d, %Y") %></p>
+                <% end %>
+            </div>
+            
+            <p>We'd love to have you join us! Please let us know if you can attend:</p>
+            
+            <a href="<%= @rsvp_url %>" class="rsvp-button">RSVP Now</a>
+            
+            <p>Can't wait to see you there!</p>
+        </div>
+        
+        <div class="footer">
+            <p>If you have any questions, please contact the event organizer.</p>
+        </div>
+    </div>
+</body>
+</html>

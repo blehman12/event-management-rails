@@ -1,134 +1,221 @@
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h2>Bulk User Management</h2>
-  <div>
-    <%= link_to "Import CSV", import_form_admin_bulk_users_path, class: "btn btn-success me-2" %>
-    <%= link_to "Export CSV", export_csv_admin_bulk_users_path, class: "btn btn-info me-2" %>
-    <%= link_to "Back to Users", admin_users_path, class: "btn btn-outline-secondary" %>
-  </div>
-</div>
-
-<div class="card mb-4">
-  <div class="card-header">
-    <h5>CSV Import Template</h5>
-  </div>
-  <div class="card-body">
-    <p>Your CSV file should have these headers (case-insensitive):</p>
-    <code>First Name, Last Name, Email, Phone, Company, Role, Text Capable</code>
-    <br><br>
-    <small class="text-muted">
-      <strong>Notes:</strong><br>
-      • First Name, Last Name, and Email are required<br>
-      • Role can be "admin" or "attendee" (defaults to attendee)<br>
-      • Text Capable can be "true", "yes", "1" for true, anything else for false<br>
-      • If password is not provided, defaults to "password123"
-    </small>
-  </div>
-</div>
-
-<%= form_with url: bulk_actions_admin_bulk_users_path, method: :post, local: true do |form| %>
-  <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5>Select Users for Bulk Actions</h5>
-      <div>
-        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAll()">Select All</button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="selectNone()">Select None</button>
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <%= form.select :bulk_action, 
-              options_for_select([
-                ['Choose an action...', ''],
-                ['Delete Selected Users', 'delete'],
-                ['Promote to Admin', 'promote_to_admin'],
-                ['Demote to User', 'demote_to_user'],
-                ['Send Invitations', 'send_invites']
-              ]), 
-              {}, 
-              { class: "form-select", required: true } %>
-        </div>
-        <div class="col-md-6">
-          <%= form.submit "Execute Action", class: "btn btn-warning", 
-                          confirm: "Are you sure you want to execute this action on selected users?" %>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Bulk User Management</h1>
+        <div>
+          <%= link_to "Import CSV", import_form_admin_bulk_users_path, class: "btn btn-outline-primary" %>
+          <%= link_to "Export CSV", export_csv_admin_bulk_users_path, class: "btn btn-outline-success" %>
         </div>
       </div>
-      
-      <div class="table-responsive">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th width="50">
-                <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll()">
-              </th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Company</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @users.each do |user| %>
-              <tr>
-                <td>
-                  <%= check_box_tag "user_ids[]", user.id, 
-                                    @selected_users.include?(user.id.to_s), 
-                                    { class: "user-checkbox" } %>
-                </td>
-                <td>
-                  <%= link_to "#{user.first_name} #{user.last_name}", admin_user_path(user), class: "text-decoration-none" %>
-                  <% if user == current_user %>
-                    <span class="badge bg-info">You</span>
+
+      <!-- Bulk Actions Form -->
+      <%= form_with url: bulk_actions_admin_bulk_users_path, method: :post, local: true, id: "bulk-form" do |form| %>
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">Bulk Actions</h5>
+          </div>
+          <div class="card-body">
+            <div class="row align-items-end">
+              <div class="col-md-4">
+                <%= form.select :bulk_action, 
+                    options_for_select([
+                      ['Select Action', ''],
+                      ['Send Invitations', 'send_invites'],
+                      ['Promote to Admin', 'promote_to_admin'],
+                      ['Demote to User', 'demote_to_user'],
+                      ['Delete Users', 'delete']
+                    ]), 
+                    { prompt: "Choose action..." }, 
+                    { class: "form-select", required: true } %>
+              </div>
+              <div class="col-md-4">
+                <%= form.submit "Perform Action", class: "btn btn-primary", id: "bulk-submit" %>
+                <button type="button" class="btn btn-outline-secondary" id="select-all">Select All</button>
+                <button type="button" class="btn btn-outline-secondary" id="clear-all">Clear All</button>
+              </div>
+              <div class="col-md-4">
+                <span id="selected-count" class="text-muted">0 users selected</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Users (<%= @users.count %> total)</h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th width="50">
+                      <input type="checkbox" id="select-all-checkbox" class="form-check-input">
+                    </th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Company</th>
+                    <th>Role</th>
+                    <th>Invited</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @users.each do |user| %>
+                    <tr>
+                      <td>
+                        <%= check_box_tag "user_ids[]", user.id, false, { class: "user-checkbox form-check-input" } %>
+                      </td>
+                      <td>
+                        <strong><%= user.first_name %> <%= user.last_name %></strong>
+                      </td>
+                      <td>
+                        <%= user.email %>
+                      </td>
+                      <td>
+                        <%= user.phone %>
+                      </td>
+                      <td>
+                        <%= user.company %>
+                      </td>
+                      <td>
+                        <% if user.respond_to?(:admin?) %>
+                          <span class="badge bg-<%= user.admin? ? 'danger' : 'secondary' %>">
+                            <%= user.admin? ? 'Admin' : 'User' %>
+                          </span>
+                        <% else %>
+                          <span class="badge bg-secondary">
+                            <%= user.role.humanize %>
+                          </span>
+                        <% end %>
+                      </td>
+                      <td>
+                        <% if user.respond_to?(:invited_at) && user.invited_at %>
+                          <span class="text-success">
+                            <%= user.invited_at.strftime("%m/%d/%Y") %>
+                          </span>
+                        <% else %>
+                          <span class="text-muted">Never</span>
+                        <% end %>
+                      </td>
+                      <td>
+                        <%= user.created_at.strftime("%m/%d/%Y") %>
+                      </td>
+                      <td>
+                        <%= link_to "Edit", edit_admin_user_path(user), class: "btn btn-sm btn-outline-primary" if defined?(edit_admin_user_path) %>
+                        <%= link_to "View", admin_user_path(user), class: "btn btn-sm btn-outline-info" if defined?(admin_user_path) %>
+                      </td>
+                    </tr>
                   <% end %>
-                </td>
-                <td><%= user.email %></td>
-                <td><%= user.company %></td>
-                <td>
-                  <% if user_is_admin?(user) %>
-                    <span class="badge bg-danger">Admin</span>
-                  <% else %>
-                    <span class="badge bg-secondary">User</span>
-                  <% end %>
-                </td>
-                <td>
-                  <span class="badge bg-<%= (user.rsvp_status.to_s == 'yes' || user.rsvp_status.to_s == '1') ? 'success' : 'secondary' %>">
-                    <%= user.rsvp_status.respond_to?(:humanize) ? user.rsvp_status.humanize : user.rsvp_status.to_s.humanize %>
-                  </span>
-                  <% if user.respond_to?(:invited_at) && user.invited_at %>
-                    <small class="text-success">Invited</small>
-                  <% end %>
-                </td>
-                <td><%= user.created_at.strftime("%m/%d/%Y") %></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Pagination if using Pagy -->
+      <% if defined?(@pagy) %>
+        <div class="mt-4">
+          <%== pagy_bootstrap_nav(@pagy) %>
+        </div>
+      <% end %>
     </div>
   </div>
-<% end %>
+</div>
 
 <script>
-function selectAll() {
-  document.querySelectorAll('.user-checkbox').forEach(checkbox => {
-    checkbox.checked = true;
-  });
-  document.getElementById('select-all-checkbox').checked = true;
-}
-
-function selectNone() {
-  document.querySelectorAll('.user-checkbox').forEach(checkbox => {
-    checkbox.checked = false;
-  });
-  document.getElementById('select-all-checkbox').checked = false;
-}
-
-function toggleSelectAll() {
+document.addEventListener('DOMContentLoaded', function() {
   const selectAllCheckbox = document.getElementById('select-all-checkbox');
-  document.querySelectorAll('.user-checkbox').forEach(checkbox => {
-    checkbox.checked = selectAllCheckbox.checked;
+  const userCheckboxes = document.querySelectorAll('.user-checkbox');
+  const selectedCount = document.getElementById('selected-count');
+  const bulkSubmit = document.getElementById('bulk-submit');
+  const selectAllBtn = document.getElementById('select-all');
+  const clearAllBtn = document.getElementById('clear-all');
+
+  function updateSelectedCount() {
+    const checked = document.querySelectorAll('.user-checkbox:checked').length;
+    selectedCount.textContent = `${checked} users selected`;
+    bulkSubmit.disabled = checked === 0;
+    
+    // Update select all checkbox state
+    if (checked === 0) {
+      selectAllCheckbox.indeterminate = false;
+      selectAllCheckbox.checked = false;
+    } else if (checked === userCheckboxes.length) {
+      selectAllCheckbox.indeterminate = false;
+      selectAllCheckbox.checked = true;
+    } else {
+      selectAllCheckbox.indeterminate = true;
+    }
+  }
+
+  // Select/deselect all
+  selectAllCheckbox.addEventListener('change', function() {
+    userCheckboxes.forEach(checkbox => {
+      checkbox.checked = this.checked;
+    });
+    updateSelectedCount();
   });
-}
+
+  // Individual checkbox changes
+  userCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', updateSelectedCount);
+  });
+
+  // Select all button
+  selectAllBtn.addEventListener('click', function() {
+    userCheckboxes.forEach(checkbox => {
+      checkbox.checked = true;
+    });
+    updateSelectedCount();
+  });
+
+  // Clear all button
+  clearAllBtn.addEventListener('click', function() {
+    userCheckboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    updateSelectedCount();
+  });
+
+  // Form submission confirmation
+  document.getElementById('bulk-form').addEventListener('submit', function(e) {
+    const action = document.querySelector('select[name="bulk_action"]').value;
+    const checked = document.querySelectorAll('.user-checkbox:checked').length;
+    
+    if (checked === 0) {
+      e.preventDefault();
+      alert('Please select at least one user.');
+      return;
+    }
+    
+    let confirmMessage = '';
+    switch(action) {
+      case 'delete':
+        confirmMessage = `Are you sure you want to delete ${checked} users? This cannot be undone.`;
+        break;
+      case 'send_invites':
+        confirmMessage = `Send invitation emails to ${checked} users?`;
+        break;
+      case 'promote_to_admin':
+        confirmMessage = `Promote ${checked} users to admin role?`;
+        break;
+      case 'demote_to_user':
+        confirmMessage = `Demote ${checked} admin users to regular user role?`;
+        break;
+    }
+    
+    if (confirmMessage && !confirm(confirmMessage)) {
+      e.preventDefault();
+    }
+  });
+
+  // Initial count update
+  updateSelectedCount();
+});
 </script>

@@ -58,6 +58,37 @@
             </div>
           </div>
 
+          <!-- ✨ CUSTOM QUESTIONS SECTION ✨ -->
+          <div class="mb-4">
+            <label class="form-label fw-bold">Custom RSVP Questions</label>
+            <small class="text-muted d-block mb-2">
+              Add questions that attendees will answer when they RSVP. 
+              Examples: "Any dietary restrictions?", "Will you bring a guest?", "T-shirt size?"
+            </small>
+            
+            <div id="custom-questions-container">
+              <% if @event.custom_questions.present? %>
+                <% @event.custom_questions.each_with_index do |question, index| %>
+                  <div class="custom-question-row mb-2">
+                    <div class="input-group">
+                      <%= text_field_tag "event[custom_questions][]", question, 
+                          class: "form-control", 
+                          placeholder: "Enter question (e.g., 'Any dietary restrictions?')" %>
+                      <button type="button" class="btn btn-outline-danger remove-question">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+            
+            <button type="button" id="add-question" class="btn btn-outline-primary btn-sm mt-2">
+              <i class="fas fa-plus"></i> Add Question
+            </button>
+          </div>
+          <!-- ✨ END CUSTOM QUESTIONS SECTION ✨ -->
+
           <div class="d-grid gap-2 d-md-flex justify-content-md-end">
             <%= link_to "Cancel", admin_events_path, class: "btn btn-outline-secondary me-md-2" %>
             <%= form.submit class: "btn btn-primary" %>
@@ -67,3 +98,35 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const container = document.getElementById('custom-questions-container');
+  const addButton = document.getElementById('add-question');
+
+  if (addButton && container) {
+    // Add new question
+    addButton.addEventListener('click', function() {
+      const questionRow = document.createElement('div');
+      questionRow.className = 'custom-question-row mb-2';
+      questionRow.innerHTML = `
+        <div class="input-group">
+          <input type="text" name="event[custom_questions][]" class="form-control" 
+                 placeholder="Enter question (e.g., 'Any dietary restrictions?')">
+          <button type="button" class="btn btn-outline-danger remove-question">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      `;
+      container.appendChild(questionRow);
+    });
+
+    // Remove question
+    container.addEventListener('click', function(e) {
+      if (e.target.closest('.remove-question')) {
+        e.target.closest('.custom-question-row').remove();
+      }
+    });
+  }
+});
+</script>

@@ -1,0 +1,156 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <% if @current_event %>
+        <!-- Event Details Card -->
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><%= @current_event.name %></h4>
+          </div>
+          <div class="card-body">
+            <p><strong>Date:</strong> <%= @current_event.event_date.strftime("%A, %B %d, %Y") %></p>
+            <% if @current_event.start_time %>
+              <p><strong>Time:</strong> <%= @current_event.start_time.strftime("%I:%M %p") %> - <%= @current_event.end_time&.strftime("%I:%M %p") %></p>
+            <% end %>
+            <% if @current_event.venue %>
+              <p><strong>Location:</strong> <%= @current_event.venue.name %></p>
+              <p><strong>Address:</strong> <%= @current_event.venue.address %></p>
+            <% end %>
+            <% if @current_event.rsvp_deadline %>
+              <p><strong>RSVP Deadline:</strong> <%= @current_event.rsvp_deadline.strftime("%B %d, %Y at %I:%M %p") %></p>
+            <% end %>
+            <% if @current_event.description.present? %>
+              <p><strong>Description:</strong> <%= simple_format(@current_event.description) %></p>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- RSVP Form Card -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Your RSVP Status: 
+              <% 
+                status_class = case @user_rsvp_status.to_s
+                             when 'yes', '1' then 'success'
+                             when 'maybe', '3' then 'warning' 
+                             when 'no', '2' then 'danger'
+                             else 'secondary'
+                             end
+              %>
+              <span class="badge bg-<%= status_class %>">
+                <%= @user_rsvp_status.humanize %>
+              </span>
+            </h5>
+          </div>
+          <div class="card-body">
+            <% unless @current_event.rsvp_deadline && @current_event.rsvp_deadline < Time.current %>
+              <%= form_with url: rsvp_update_path, method: :patch, local: true, id: 'rsvp-form' do |form| %>
+                
+                <!-- RSVP Status Buttons -->
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Will you attend?</label>
+                  <div class="btn-group d-flex" role="group">
+                    <%= form.radio_button :status, 'yes', 
+                          class: 'd-none rsvp-radio', 
+                          checked: (@user_rsvp_status.to_s == 'yes' || @user_rsvp_status.to_s == '1') %>
+                    <label for="rsvp_status_yes" 
+                           class="btn <%= (@user_rsvp_status.to_s == 'yes' || @user_rsvp_status.to_s == '1') ? 'btn-success' : 'btn-outline-success' %> flex-fill">
+                      Yes
+                    </label>
+                    
+                    <%= form.radio_button :status, 'maybe', 
+                          class: 'd-none rsvp-radio',
+                          checked: (@user_rsvp_status.to_s == 'maybe' || @user_rsvp_status.to_s == '3') %>
+                    <label for="rsvp_status_maybe" 
+                           class="btn <%= (@user_rsvp_status.to_s == 'maybe' || @user_rsvp_status.to_s == '3') ? 'btn-warning' : 'btn-outline-warning' %> flex-fill">
+                      Maybe
+                    </label>
+                    
+                    <%= form.radio_button :status, 'no', 
+                          class: 'd-none rsvp-radio',
+                          checked: (@user_rsvp_status.to_s == 'no' || @user_rsvp_status.to_s == '2') %>
+                    <label for="rsvp_status_no" 
+                           class="btn <%= (@user_rsvp_status.to_s == 'no' || @user_rsvp_status.to_s == '2') ? 'btn-danger' : 'btn-outline-danger' %> flex-fill">
+                      No
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Custom Questions Section -->
+                <% if @current_event.custom_questions.present? %>
+                  <div class="mb-4">
+                    <h6 class="fw-bold">Additional Information</h6>
+                    <% @current_event.custom_questions.each_with_index do |question, index| %>
+                      <div class="mb-3">
+                        <label class="form-label"><%= question %></label>
+                        <%= form.text_area "rsvp_answers[question_#{index}]", 
+                              value: (@participant&.rsvp_answers&.dig("question_#{index}") || ''),
+                              class: "form-control",
+                              rows: 2,
+                              placeholder: "Your answer..." %>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+
+                <!-- Submit Button -->
+                <div class="d-grid">
+                  <%= form.submit "Update RSVP", class: "btn btn-primary btn-lg" %>
+                </div>
+              <% end %>
+
+              <div class="mt-3 text-center">
+                <small class="text-muted">
+                  <% if @current_event.rsvp_deadline && @current_event.rsvp_deadline > Time.current %>
+                    <% days_left = ((@current_event.rsvp_deadline - Time.current) / 1.day).ceil %>
+                    <%= pluralize(days_left, 'day') %> left to RSVP
+                  <% end %>
+                </small>
+              </div>
+            <% else %>
+              <div class="alert alert-warning">
+                <h6>RSVP Deadline Passed</h6>
+                <p class="mb-0">The RSVP deadline for this event has passed. Please contact the event organizer if you need to make changes.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+      <% else %>
+        <div class="alert alert-info">
+          <h5>No Active Events</h5>
+          <p class="mb-0">There are currently no events available for RSVP.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle radio button styling
+  const radioButtons = document.querySelectorAll('.rsvp-radio');
+  const labels = document.querySelectorAll('label[for^="rsvp_status"]');
+  
+  labels.forEach(label => {
+    label.addEventListener('click', function() {
+      // Remove active classes from all labels
+      labels.forEach(l => {
+        l.className = l.className.replace(/btn-success|btn-warning|btn-danger/, 
+                                         l.className.includes('success') ? 'btn-outline-success' :
+                                         l.className.includes('warning') ? 'btn-outline-warning' :
+                                         'btn-outline-danger');
+      });
+      
+      // Add active class to clicked label
+      if (this.getAttribute('for') === 'rsvp_status_yes') {
+        this.className = this.className.replace('btn-outline-success', 'btn-success');
+      } else if (this.getAttribute('for') === 'rsvp_status_maybe') {
+        this.className = this.className.replace('btn-outline-warning', 'btn-warning');
+      } else if (this.getAttribute('for') === 'rsvp_status_no') {
+        this.className = this.className.replace('btn-outline-danger', 'btn-danger');
+      }
+    });
+  });
+});
+</script>

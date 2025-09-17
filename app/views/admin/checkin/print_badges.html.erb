@@ -1,0 +1,324 @@
+<!-- Create app/views/admin/checkin/print_badges.html.erb -->
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <h1>Printable Badges: <%= @event.name %></h1>
+        <div>
+          <button onclick="window.print()" class="btn btn-primary">
+            <i class="fas fa-print"></i> Print All Badges
+          </button>
+          <%= link_to "Back to QR Codes", generate_qr_codes_admin_event_path(@event), class: "btn btn-secondary" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print Instructions -->
+  <div class="card mb-4 no-print">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0">Printing Instructions</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h6>For Best Results:</h6>
+          <ul>
+            <li>Use cardstock or heavy paper (110-130 GSM)</li>
+            <li>Print in landscape orientation</li>
+            <li>Ensure "Print backgrounds" is enabled</li>
+            <li>Use 100% scale (no shrinking)</li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h6>Badge Dimensions:</h6>
+          <ul>
+            <li>Each badge: 4" × 3" (standard name tag size)</li>
+            <li>4 badges per 8.5" × 11" page</li>
+            <li>Pre-perforated badge sheets recommended</li>
+            <li>Cut along dotted lines if using regular paper</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Badges Layout -->
+  <div class="badges-container">
+    <% @participants.each_slice(4) do |page_participants| %>
+      <div class="badge-page">
+        <% page_participants.each do |participant| %>
+          <div class="badge">
+            <div class="badge-header">
+              <h4><%= @event.name %></h4>
+            </div>
+            
+            <div class="badge-body">
+              <div class="participant-info">
+                <h3 class="participant-name">
+                  <%= participant.user.first_name %><br>
+                  <%= participant.user.last_name %>
+                </h3>
+                <p class="participant-email"><%= participant.user.email %></p>
+                <% if participant.user.company.present? %>
+                  <p class="participant-company"><%= participant.user.company %></p>
+                <% end %>
+              </div>
+              
+              <div class="qr-code-section">
+                <div class="qr-code-container" data-url="<%= participant.qr_code_data %>">
+                  <canvas class="qr-canvas" width="120" height="120"></canvas>
+                </div>
+                <p class="qr-instruction">Scan to check in</p>
+              </div>
+            </div>
+            
+            <div class="badge-footer">
+              <% if @event.event_date %>
+                <%= @event.event_date.strftime("%B %d, %Y") %>
+              <% end %>
+              <% if @event.venue %>
+                | <%= @event.venue.name %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        
+        <!-- Fill empty badges on partial pages -->
+        <% (4 - page_participants.length).times do %>
+          <div class="badge badge-empty"></div>
+        <% end %>
+      </div>
+      
+      <div class="page-break"></div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Include QR Code library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+
+<style>
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+  
+  .badge-page {
+    page-break-after: always;
+    width: 8.5in;
+    height: 11in;
+    margin: 0;
+    padding: 0.25in;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-content: space-between;
+  }
+  
+  .badge {
+    width: 4in;
+    height: 3in;
+    border: 2px solid #333;
+    border-radius: 8px;
+    page-break-inside: avoid;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+}
+
+/* Screen Styles */
+.badges-container {
+  background: #f5f5f5;
+  min-height: 600px;
+}
+
+.badge-page {
+  background: white;
+  width: 8.5in;
+  height: 11in;
+  margin: 0 auto 20px;
+  padding: 0.25in;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-content: space-between;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.badge {
+  width: 4in;
+  height: 3in;
+  border: 2px solid #333;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.badge-empty {
+  border: 2px dashed #ccc;
+  background: transparent;
+}
+
+.badge-header {
+  background: rgba(0,0,0,0.2);
+  padding: 8px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+.badge-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.badge-body {
+  flex: 1;
+  display: flex;
+  padding: 12px;
+  gap: 8px;
+}
+
+.participant-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.participant-name {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.participant-email {
+  font-size: 11px;
+  margin: 0 0 4px 0;
+  opacity: 0.9;
+  word-break: break-all;
+}
+
+.participant-company {
+  font-size: 12px;
+  margin: 0;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.qr-code-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+}
+
+.qr-code-container {
+  background: white;
+  padding: 4px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.qr-instruction {
+  font-size: 10px;
+  text-align: center;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.badge-footer {
+  background: rgba(0,0,0,0.2);
+  padding: 4px 8px;
+  font-size: 10px;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.3);
+}
+
+.page-break {
+  page-break-after: always;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1000px) {
+  .badge-page {
+    transform: scale(0.7);
+    transform-origin: top center;
+    margin-bottom: 40px;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Generate QR codes for all badges
+  generateAllBadgeQRCodes();
+});
+
+function generateAllBadgeQRCodes() {
+  const qrContainers = document.querySelectorAll('.qr-code-container');
+  let processedCount = 0;
+  
+  qrContainers.forEach(function(container, index) {
+    const canvas = container.querySelector('.qr-canvas');
+    const url = container.dataset.url;
+    
+    if (url && canvas) {
+      // Add a small delay to prevent overwhelming the browser
+      setTimeout(() => {
+        QRCode.toCanvas(canvas, url, {
+          width: 120,
+          height: 120,
+          margin: 1,
+          color: {
+            dark: '#000000',
+            light: '#ffffff'
+          }
+        }, function(error) {
+          if (error) {
+            console.error(`QR Code generation error for badge ${index}:`, error);
+          } else {
+            processedCount++;
+            if (processedCount === qrContainers.length) {
+              console.log('All badge QR codes generated successfully');
+            }
+          }
+        });
+      }, index * 50); // 50ms delay between each QR code generation
+    }
+  });
+}
+
+// Print optimization
+window.addEventListener('beforeprint', function() {
+  // Ensure all QR codes are generated before printing
+  console.log('Preparing badges for printing...');
+});
+
+window.addEventListener('afterprint', function() {
+  console.log('Print job completed');
+});
+</script>

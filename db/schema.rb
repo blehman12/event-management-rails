@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_16_030706) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_17_172123) do
   create_table "event_participants", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "event_id", null: false
@@ -21,7 +21,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_16_030706) do
     t.datetime "responded_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "rsvp_answers"
+    t.datetime "checked_in_at"
+    t.string "check_in_method"
+    t.string "qr_code_token"
+    t.integer "checked_in_by_id"
+    t.index ["checked_in_at"], name: "index_event_participants_on_checked_in_at"
+    t.index ["checked_in_by_id"], name: "index_event_participants_on_checked_in_by_id"
     t.index ["event_id"], name: "index_event_participants_on_event_id"
+    t.index ["qr_code_token"], name: "index_event_participants_on_qr_code_token", unique: true
     t.index ["role"], name: "index_event_participants_on_role"
     t.index ["rsvp_status"], name: "index_event_participants_on_rsvp_status"
     t.index ["user_id", "event_id"], name: "index_event_participants_on_user_id_and_event_id", unique: true
@@ -40,6 +48,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_16_030706) do
     t.integer "creator_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "custom_questions"
   end
 
   create_table "users", force: :cascade do |t|
@@ -76,4 +85,5 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_16_030706) do
 
   add_foreign_key "event_participants", "events"
   add_foreign_key "event_participants", "users"
+  add_foreign_key "event_participants", "users", column: "checked_in_by_id"
 end
