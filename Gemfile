@@ -6,7 +6,7 @@ gem "rails", "~> 7.1.5", ">= 7.1.5.2"
 
 # Core Rails gems
 gem "sprockets-rails"          # Asset pipeline
-gem "sqlite3", ">= 1.4"       # Database for development
+gem "sqlite3", ">= 1.4", group: [:development, :test]       # Database for development
 gem "puma", ">= 5.0"          # Web server
 gem "importmap-rails"         # JavaScript with ESM import maps
 gem "turbo-rails"             # Hotwire SPA-like page accelerator
@@ -36,6 +36,8 @@ group :development do
   gem "web-console"           # Console on exceptions pages
   # gem "rack-mini-profiler"  # Speed badges (commented out)
   # gem "spring"              # Speed up commands (commented out)
+  gem "sqlite3", ">= 1.4", group: [:development, :test]
+
 end
 
 group :test do
@@ -44,6 +46,8 @@ group :test do
   gem "selenium-webdriver"   # Browser automation for tests
   gem 'rspec_junit_formatter'
   gem 'rails-controller-testing'
+  gem "sqlite3", ">= 1.4", group: [:development, :test]
+
 
 
 end
@@ -53,3 +57,6 @@ end
 # gem "kredis"
 # gem "bcrypt", "~> 3.1.7"
 # gem "image_processing", "~> 1.2"
+group :production do
+  gem "pg", "~> 1.1"
+end
