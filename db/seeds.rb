@@ -9,7 +9,7 @@ puts "Creating admin users..."
 admin = User.create!(
   first_name: 'Admin',
   last_name: 'User',
-  email: 'admin@ptc.com',
+  email: 'admin@nwtg.com',
   password: 'password123',
   phone: '503-555-0100',
   company: 'PTC'
