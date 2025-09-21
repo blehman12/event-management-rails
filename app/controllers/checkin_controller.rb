@@ -82,4 +82,20 @@ class CheckinController < ApplicationController
       redirect_to checkin_path, alert: "Check-in information not found"
     end
   end
+  
+def recent_checkins
+  @recent_checkins = EventParticipant.includes(:user, :event)
+                                    .where.not(checked_in_at: nil)
+                                    .order(checked_in_at: :desc)
+                                    .limit(10)
+  
+  render json: @recent_checkins.map do |checkin|
+    {
+      user_name: "#{checkin.user.first_name} #{checkin.user.last_name}",
+      event_name: checkin.event.name,
+      checked_in_at: checkin.checked_in_at.strftime('%m/%d %I:%M %p')
+    }
+  end
+end
+
 end

@@ -44,7 +44,8 @@
           </div>
           <div class="card-body">
             <% unless @current_event.rsvp_deadline && @current_event.rsvp_deadline < Time.current %>
-              <%= form_with url: rsvp_update_path, method: :patch, local: true, id: 'rsvp-form' do |form| %>
+			  <%= form_with url: update_rsvp_path(@current_event), method: :patch, local: true, id: 'rsvp-form' do |form| %>
+
                 
                 <!-- RSVP Status Buttons -->
                 <div class="mb-4">

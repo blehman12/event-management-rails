@@ -1,0 +1,362 @@
+<!-- Create app/views/checkin/scan.html.erb -->
+
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+          <h4 class="mb-0">Event Check-in Scanner</h4>
+        </div>
+        <div class="card-body">
+          
+          <!-- QR Code Scanner Section -->
+          <div id="qr-scanner-section" class="text-center mb-4">
+            <h5>Scan QR Code</h5>
+            <p class="text-muted">Point your camera at the attendee's QR code</p>
+            
+            <!-- Video element for camera -->
+            <div class="scanner-container mb-3">
+              <video id="qr-video" width="100%" height="300" style="border: 2px solid #007bff; border-radius: 8px;"></video>
+              <div id="qr-overlay" class="scanner-overlay">
+                <div class="scanner-line"></div>
+              </div>
+            </div>
+            
+            <!-- Scanner Controls -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-3">
+              <button id="start-scanner" class="btn btn-success">
+                <i class="fas fa-camera"></i> Start Scanner
+              </button>
+              <button id="stop-scanner" class="btn btn-danger" style="display: none;">
+                <i class="fas fa-stop"></i> Stop Scanner
+              </button>
+              <button id="switch-camera" class="btn btn-outline-secondary" style="display: none;">
+                <i class="fas fa-sync-alt"></i> Switch Camera
+              </button>
+            </div>
+            
+            <!-- Scanner Status -->
+            <div id="scanner-status" class="alert alert-info" style="display: none;">
+              <span id="status-text">Initializing scanner...</span>
+            </div>
+          </div>
+          
+          <!-- Manual Entry Section -->
+          <div class="border-top pt-4">
+            <h5 class="text-center mb-3">Manual Check-in</h5>
+            <p class="text-center text-muted">Can't scan? Enter details manually</p>
+            
+            <%= form_with url: checkin_verify_path, method: :post, local: true, class: "needs-validation", novalidate: true do |f| %>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <%= f.text_field :first_name, placeholder: "First Name", class: "form-control", required: true %>
+                  <div class="invalid-feedback">Please enter first name</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <%= f.text_field :last_name, placeholder: "Last Name", class: "form-control", required: true %>
+                  <div class="invalid-feedback">Please enter last name</div>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <%= f.email_field :email, placeholder: "Email Address", class: "form-control", required: true %>
+                <div class="invalid-feedback">Please enter a valid email</div>
+              </div>
+              
+              <% if params[:event_id] %>
+                <%= f.hidden_field :event_id, value: params[:event_id] %>
+              <% else %>
+                <div class="mb-3">
+                  <%= f.select :event_id, 
+                      options_from_collection_for_select(Event.upcoming, :id, :name), 
+                      { prompt: "Select Event" }, 
+                      { class: "form-select", required: true } %>
+                  <div class="invalid-feedback">Please select an event</div>
+                </div>
+              <% end %>
+              
+              <div class="d-grid">
+                <%= f.submit "Check In Manually", class: "btn btn-primary btn-lg" %>
+              </div>
+            <% end %>
+          </div>
+          
+          <!-- Recent Check-ins (if admin) -->
+          <% if current_user&.admin? %>
+            <div class="border-top pt-4 mt-4">
+              <h6>Recent Check-ins</h6>
+              <div id="recent-checkins" class="list-group">
+                <!-- Will be populated by JavaScript -->
+              </div>
+            </div>
+          <% end %>
+          
+        </div>
+      </div>
+      
+      <!-- Help Section -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h6 class="mb-0">Troubleshooting</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>QR Code Issues:</h6>
+              <ul class="small">
+                <li>Ensure good lighting</li>
+                <li>Hold QR code steady</li>
+                <li>Try different camera angles</li>
+                <li>Clean camera lens</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6>Manual Entry:</h6>
+              <ul class="small">
+                <li>Use the name as registered</li>
+                <li>Check email spelling carefully</li>
+                <li>Verify event selection</li>
+                <li>Contact admin if not found</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QR Scanner JavaScript -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let html5QrCode = null;
+  let currentCameraId = null;
+  let cameras = [];
+  
+  const videoElement = document.getElementById('qr-video');
+  const startButton = document.getElementById('start-scanner');
+  const stopButton = document.getElementById('stop-scanner');
+  const switchButton = document.getElementById('switch-camera');
+  const statusDiv = document.getElementById('scanner-status');
+  const statusText = document.getElementById('status-text');
+  
+  // Initialize camera selection
+  Html5Qrcode.getCameras().then(devices => {
+    cameras = devices;
+    if (cameras.length > 1) {
+      switchButton.style.display = 'inline-block';
+    }
+  }).catch(err => {
+    console.warn('No cameras found:', err);
+    updateStatus('No cameras available. Please use manual entry.', 'warning');
+  });
+  
+  function updateStatus(message, type = 'info') {
+    statusText.textContent = message;
+    statusDiv.className = `alert alert-${type}`;
+    statusDiv.style.display = 'block';
+  }
+  
+  function hideStatus() {
+    statusDiv.style.display = 'none';
+  }
+  
+  function onScanSuccess(decodedText, decodedResult) {
+    console.log(`QR Code detected: ${decodedText}`);
+    
+    // Check if it's a valid check-in URL
+    try {
+      const url = new URL(decodedText);
+      if (url.pathname.includes('/checkin/verify')) {
+        // Redirect to the verification URL
+        window.location.href = decodedText;
+      } else {
+        updateStatus('Invalid QR code. Please try again or use manual entry.', 'warning');
+      }
+    } catch (e) {
+      // Try to extract token if it's just the token
+      if (decodedText.length > 10) {
+        window.location.href = `/checkin/verify?token=${decodedText}`;
+      } else {
+        updateStatus('Invalid QR code format. Please try again.', 'warning');
+      }
+    }
+  }
+  
+  function onScanFailure(error) {
+    // Ignore frequent scan failures - they're normal
+    if (error.includes('No QR code found')) {
+      return;
+    }
+    console.warn(`QR Code scan error: ${error}`);
+  }
+  
+  startButton.addEventListener('click', function() {
+    if (cameras.length === 0) {
+      updateStatus('No cameras available. Please use manual entry.', 'warning');
+      return;
+    }
+    
+    const cameraId = currentCameraId || cameras[0].id;
+    html5QrCode = new Html5Qrcode("qr-video");
+    
+    updateStatus('Starting camera...', 'info');
+    
+    html5QrCode.start(
+      cameraId,
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      onScanSuccess,
+      onScanFailure
+    ).then(() => {
+      updateStatus('Scanner ready! Point camera at QR code.', 'success');
+      startButton.style.display = 'none';
+      stopButton.style.display = 'inline-block';
+      if (cameras.length > 1) {
+        switchButton.style.display = 'inline-block';
+      }
+    }).catch(err => {
+      console.error('Failed to start scanner:', err);
+      updateStatus('Failed to start camera. Please check permissions and try again.', 'danger');
+    });
+  });
+  
+  stopButton.addEventListener('click', function() {
+    if (html5QrCode) {
+      html5QrCode.stop().then(() => {
+        hideStatus();
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+        switchButton.style.display = 'none';
+        html5QrCode = null;
+      }).catch(err => {
+        console.error('Failed to stop scanner:', err);
+      });
+    }
+  });
+  
+  switchButton.addEventListener('click', function() {
+    if (cameras.length > 1) {
+      const currentIndex = cameras.findIndex(camera => camera.id === currentCameraId);
+      const nextIndex = (currentIndex + 1) % cameras.length;
+      currentCameraId = cameras[nextIndex].id;
+      
+      // Restart with new camera
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          startButton.click();
+        });
+      }
+    }
+  });
+  
+  // Form validation
+  const forms = document.querySelectorAll('.needs-validation');
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+  });
+  
+  // Load recent check-ins if admin
+  <% if current_user&.admin? %>
+  function loadRecentCheckins() {
+    fetch('/admin/recent_checkins')
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById('recent-checkins');
+        if (data.length === 0) {
+          container.innerHTML = '<div class="text-muted">No recent check-ins</div>';
+        } else {
+          container.innerHTML = data.map(checkin => 
+            `<div class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>${checkin.user_name}</strong><br>
+                <small class="text-muted">${checkin.event_name}</small>
+              </div>
+              <small>${checkin.checked_in_at}</small>
+            </div>`
+          ).join('');
+        }
+      })
+      .catch(err => console.error('Failed to load recent check-ins:', err));
+  }
+  
+  // Load recent check-ins on page load
+  loadRecentCheckins();
+  
+  // Refresh every 30 seconds
+  setInterval(loadRecentCheckins, 30000);
+  <% end %>
+});
+</script>
+
+<style>
+.scanner-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.scanner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  border: 2px solid #007bff;
+  border-radius: 8px;
+}
+
+.scanner-line {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #28a745, transparent);
+  animation: scan-line 2s ease-in-out infinite;
+}
+
+@keyframes scan-line {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+#qr-video {
+  max-width: 100%;
+  height: auto;
+  background: #f8f9fa;
+}
+
+.needs-validation .form-control:invalid {
+  border-color: #dc3545;
+}
+
+.needs-validation .form-control:valid {
+  border-color: #28a745;
+}
+
+@media (max-width: 768px) {
+  #qr-video {
+    height: 250px;
+  }
+  
+  .d-md-flex {
+    flex-direction: column;
+  }
+  
+  .d-md-flex .btn {
+    margin-bottom: 0.5rem;
+  }
+}
+</style>

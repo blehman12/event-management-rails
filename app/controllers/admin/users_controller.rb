@@ -25,37 +25,29 @@ class Admin::UsersController < Admin::BaseController
   def edit
   end
   
-  def update
-    # Set flag for self-editing validation
-    @user.editing_self = (@user == current_user)
-    
-    user_update_params = user_params
-    
-    # Prevent self-demotion at controller level too
-    if @user == current_user && user_update_params[:role] != 'admin'
-      redirect_to edit_admin_user_path(@user), 
-                  alert: 'You cannot remove your own admin privileges.' and return
-    end
-    
-    # Remove password fields if they're blank
-    if user_update_params[:password].blank?
-      user_update_params.delete(:password)
-      user_update_params.delete(:password_confirmation)
-    end
-    
-    if @user.update(user_update_params)
-      if @user == current_user && @user.role != 'admin'
-        # This shouldn't happen due to validation, but just in case
-        sign_out current_user
-        redirect_to root_path, alert: 'Admin privileges removed. Please contact another admin.'
-      else
-        redirect_to admin_user_path(@user), notice: 'User was successfully updated.'
-      end
-    else
-      render :edit
-    end
+def update
+  user_update_params = user_params
+  
+  # Prevent self-demotion at controller level
+  if @user == current_user && user_update_params[:role] != 'admin'
+    redirect_to edit_admin_user_path(@user), 
+                alert: 'You cannot remove your own admin privileges.'
+    return
   end
   
+  # Remove password fields if they're blank
+  if user_update_params[:password].blank?
+    user_update_params.delete(:password)
+    user_update_params.delete(:password_confirmation)
+  end
+  
+  if @user.update(user_update_params)
+    redirect_to admin_user_path(@user), notice: 'User was successfully updated.'
+  else
+    render :edit
+  end
+end
+
   def destroy
     if @user == current_user
       redirect_to admin_users_path, alert: 'You cannot delete your own account.'
@@ -66,6 +58,13 @@ class Admin::UsersController < Admin::BaseController
       redirect_to admin_users_path, notice: 'User was successfully deleted.'
     end
   end
+  
+
+# In app/controllers/admin/users_controller.rb
+def bulk_actions
+  @users = User.all
+  # This action typically just renders a view with bulk operation options
+end
   
   private
   

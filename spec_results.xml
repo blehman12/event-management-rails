@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="rspec" tests="32" skipped="0" failures="32" errors="0" time="0.121884" timestamp="2025-09-19T15:16:52-07:00" hostname="gigan">
+<properties>
+<property name="seed" value="64675"/>
+</properties>
+<testcase classname="spec.controllers.dashboard_controller_spec" name="DashboardController GET #index returns a success response" file="./spec/controllers/dashboard_controller_spec.rb" time="0.005982"><failure message="undefined method `create&apos; for #&lt;RSpec::ExampleGroups::DashboardController::GETIndex:0x00007fce2c5f5620&gt;" type="NoMethodError">Failure/Error: let(:user) { create(:user) }
+
+NoMethodError:
+  undefined method `create&apos; for #&lt;RSpec::ExampleGroups::DashboardController::GETIndex:0x00007fce2c5f5620&gt;
+./spec/controllers/dashboard_controller_spec.rb:4:in `block (2 levels) in &lt;top (required)&gt;&apos;
+./spec/controllers/dashboard_controller_spec.rb:7:in `block (2 levels) in &lt;top (required)&gt;&apos;</failure></testcase>
+<testcase classname="spec.controllers.dashboard_controller_spec" name="DashboardController GET #index assigns instance variables" file="./spec/controllers/dashboard_controller_spec.rb" time="0.001603"><failure message="undefined method `create&apos; for #&lt;RSpec::ExampleGroups::DashboardController::GETIndex:0x00007fce2c7d46a8&gt;" type="NoMethodError">Failure/Error: let(:user) { create(:user) }
+
+NoMethodError:
+  undefined method `create&apos; for #&lt;RSpec::ExampleGroups::DashboardController::GETIndex:0x00007fce2c7d46a8&gt;
+./spec/controllers/dashboard_controller_spec.rb:4:in `block (2 levels) in &lt;top (required)&gt;&apos;
+./spec/controllers/dashboard_controller_spec.rb:7:in `block (2 levels) in &lt;top (required)&gt;&apos;</failure></testcase>
+<testcase classname="spec.controllers.dashboard_controller_spec" name="DashboardController when user is not signed in redirects to sign in page" file="./spec/controllers/dashboard_controller_spec.rb" time="0.001468"><failure message="undefined method `create&apos; for #&lt;RSpec::ExampleGroups::DashboardController::WhenUserIsNotSignedIn:0x00007fce2c53f280&gt;" type="NoMethodError">Failure/Error: let(:user) { create(:user) }
+
+NoMethodError:
+  undefined method `create&apos; for #&lt;RSpec::ExampleGroups::DashboardController::WhenUserIsNotSignedIn:0x00007fce2c53f280&gt;
+./spec/controllers/dashboard_controller_spec.rb:4:in `block (2 levels) in &lt;top (required)&gt;&apos;
+./spec/controllers/dashboard_controller_spec.rb:7:in `block (2 levels) in &lt;top (required)&gt;&apos;</failure></testcase>
+<testcase classname="spec.mailers.event_notification_mailer_spec" name="EventNotificationMailer rsvp_confirmation renders the headers" file="./spec/mailers/event_notification_mailer_spec.rb" time="0.054762"><failure message="wrong number of arguments (given 0, expected 1)" type="ArgumentError">Failure/Error:
+  def rsvp_confirmation(participant)
+    @participant = participant
+    @event = participant.event
+    @user = participant.user
+    
+    mail(
+      to: @user.email,
+      subject: &quot;RSVP Confirmed: #{@event.name}&quot;
+    )
+  end
+
+ArgumentError:
+  wrong number of arguments (given 0, expected 1)
+./app/mailers/event_notification_mailer.rb:5:in `rsvp_confirmation&apos;
+./spec/mailers/event_notification_mailer_spec.rb:8:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.mailers.event_notification_mailer_spec" name="EventNotificationMailer rsvp_confirmation renders the body" file="./spec/mailers/event_notification_mailer_spec.rb" time="0.002851"><failure message="wrong number of arguments (given 0, expected 1)" type="ArgumentError">Failure/Error:
+  def rsvp_confirmation(participant)
+    @participant = participant
+    @event = participant.event
+    @user = participant.user
+    
+    mail(
+      to: @user.email,
+      subject: &quot;RSVP Confirmed: #{@event.name}&quot;
+    )
+  end
+
+ArgumentError:
+  wrong number of arguments (given 0, expected 1)
+./app/mailers/event_notification_mailer.rb:5:in `rsvp_confirmation&apos;
+./spec/mailers/event_notification_mailer_spec.rb:14:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.event_spec" name="Event validations " file="./spec/models/event_spec.rb" time="0.001373"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Validations:0x00007fce2c154a58&gt;" type="NoMethodError">Failure/Error: subject { build(:event) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Validations:0x00007fce2c154a58&gt;
+./spec/models/event_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/event_spec.rb:7:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.event_spec" name="Event validations " file="./spec/models/event_spec.rb" time="0.001316"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Validations:0x00007fce2c5c8c10&gt;" type="NoMethodError">Failure/Error: subject { build(:event) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Validations:0x00007fce2c5c8c10&gt;
+./spec/models/event_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/event_spec.rb:8:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.event_spec" name="Event validations " file="./spec/models/event_spec.rb" time="0.001226"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Validations:0x00007fce2c5c68c0&gt;" type="NoMethodError">Failure/Error: subject { build(:event) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Validations:0x00007fce2c5c68c0&gt;
+./spec/models/event_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/event_spec.rb:9:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.event_spec" name="Event validations " file="./spec/models/event_spec.rb" time="0.001304"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Validations:0x00007fce2c5c4110&gt;" type="NoMethodError">Failure/Error: subject { build(:event) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Validations:0x00007fce2c5c4110&gt;
+./spec/models/event_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/event_spec.rb:10:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.event_spec" name="Event validations " file="./spec/models/event_spec.rb" time="0.001198"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Validations:0x00007fce2c5c1f50&gt;" type="NoMethodError">Failure/Error: subject { build(:event) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Validations:0x00007fce2c5c1f50&gt;
+./spec/models/event_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/event_spec.rb:11:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.event_spec" name="Event associations " file="./spec/models/event_spec.rb" time="0.001233"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Associations:0x00007fce2c0739e0&gt;" type="NoMethodError">Failure/Error: subject { build(:event) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Associations:0x00007fce2c0739e0&gt;
+./spec/models/event_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/event_spec.rb:15:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.event_spec" name="Event associations " file="./spec/models/event_spec.rb" time="0.001148"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Associations:0x00007fce2c79e990&gt;" type="NoMethodError">Failure/Error: subject { build(:event) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::Associations:0x00007fce2c79e990&gt;
+./spec/models/event_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/event_spec.rb:16:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.event_spec" name="Event scopes .upcoming returns events in the future" file="./spec/models/event_spec.rb" time="0.001133"><failure message="undefined method `create&apos; for #&lt;RSpec::ExampleGroups::Event::Scopes::Upcoming:0x00007fce2c0c2d10&gt;" type="NoMethodError">Failure/Error: let!(:past_event) { create(:event, :past) }
+
+NoMethodError:
+  undefined method `create&apos; for #&lt;RSpec::ExampleGroups::Event::Scopes::Upcoming:0x00007fce2c0c2d10&gt;
+./spec/models/event_spec.rb:20:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.event_spec" name="Event#rsvp_open? returns true when deadline is in the future" file="./spec/models/event_spec.rb" time="0.001387"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::RsvpOpen:0x00007fce2c2d1c50&gt;" type="NoMethodError">Failure/Error: event = build(:event, rsvp_deadline: 1.day.from_now)
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::RsvpOpen:0x00007fce2c2d1c50&gt;
+./spec/models/event_spec.rb:38:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.event_spec" name="Event#rsvp_open? returns false when deadline has passed" file="./spec/models/event_spec.rb" time="0.001188"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::RsvpOpen:0x00007fce2c79a3e0&gt;" type="NoMethodError">Failure/Error: event = build(:event, rsvp_deadline: 1.day.ago)
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Event::RsvpOpen:0x00007fce2c79a3e0&gt;
+./spec/models/event_spec.rb:43:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.user_spec" name="User validations " file="./spec/models/user_spec.rb" time="0.001153"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c12e510&gt;" type="NoMethodError">Failure/Error: subject { build(:user) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c12e510&gt;
+./spec/models/user_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/user_spec.rb:7:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.user_spec" name="User validations " file="./spec/models/user_spec.rb" time="0.001157"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c7972d0&gt;" type="NoMethodError">Failure/Error: subject { build(:user) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c7972d0&gt;
+./spec/models/user_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/user_spec.rb:8:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.user_spec" name="User validations " file="./spec/models/user_spec.rb" time="0.001203"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c795cf0&gt;" type="NoMethodError">Failure/Error: subject { build(:user) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c795cf0&gt;
+./spec/models/user_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/user_spec.rb:9:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.user_spec" name="User validations " file="./spec/models/user_spec.rb" time="0.001166"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c794710&gt;" type="NoMethodError">Failure/Error: subject { build(:user) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c794710&gt;
+./spec/models/user_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/user_spec.rb:10:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.user_spec" name="User validations " file="./spec/models/user_spec.rb" time="0.001148"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c793130&gt;" type="NoMethodError">Failure/Error: subject { build(:user) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c793130&gt;
+./spec/models/user_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/user_spec.rb:11:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.user_spec" name="User validations " file="./spec/models/user_spec.rb" time="0.001115"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c791b50&gt;" type="NoMethodError">Failure/Error: subject { build(:user) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Validations:0x00007fce2c791b50&gt;
+./spec/models/user_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/user_spec.rb:12:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.user_spec" name="User enums " file="./spec/models/user_spec.rb" time="0.001226"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Enums:0x00007fce2c417a38&gt;" type="NoMethodError">Failure/Error: subject { build(:user) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Enums:0x00007fce2c417a38&gt;
+./spec/models/user_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/user_spec.rb:16:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.user_spec" name="User enums " file="./spec/models/user_spec.rb" time="0.001150"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Enums:0x00007fce2c7ce848&gt;" type="NoMethodError">Failure/Error: subject { build(:user) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::Enums:0x00007fce2c7ce848&gt;
+./spec/models/user_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/user_spec.rb:17:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.user_spec" name="User#full_name returns the full name" file="./spec/models/user_spec.rb" time="0.001141"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::FullName:0x00007fce2c50d208&gt;" type="NoMethodError">Failure/Error: user = build(:user, first_name: &apos;John&apos;, last_name: &apos;Doe&apos;)
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::User::FullName:0x00007fce2c50d208&gt;
+./spec/models/user_spec.rb:22:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.user_spec" name="User admin functionality identifies admin users correctly" file="./spec/models/user_spec.rb" time="0.001129"><failure message="undefined method `create&apos; for #&lt;RSpec::ExampleGroups::User::AdminFunctionality:0x00007fce2c5ada28&gt;" type="NoMethodError">Failure/Error: let(:admin) { create(:user, :admin) }
+
+NoMethodError:
+  undefined method `create&apos; for #&lt;RSpec::ExampleGroups::User::AdminFunctionality:0x00007fce2c5ada28&gt;
+./spec/models/user_spec.rb:28:in `block (3 levels) in &lt;main&gt;&apos;
+./spec/models/user_spec.rb:32:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.venue_spec" name="Venue validations " file="./spec/models/venue_spec.rb" time="0.001159"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Validations:0x00007fce2c5bdd60&gt;" type="NoMethodError">Failure/Error: subject { build(:venue) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Validations:0x00007fce2c5bdd60&gt;
+./spec/models/venue_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/venue_spec.rb:7:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.venue_spec" name="Venue validations " file="./spec/models/venue_spec.rb" time="0.001129"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Validations:0x00007fce2c7c2d18&gt;" type="NoMethodError">Failure/Error: subject { build(:venue) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Validations:0x00007fce2c7c2d18&gt;
+./spec/models/venue_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/venue_spec.rb:8:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.venue_spec" name="Venue validations " file="./spec/models/venue_spec.rb" time="0.001164"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Validations:0x00007fce2d9cfab0&gt;" type="NoMethodError">Failure/Error: subject { build(:venue) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Validations:0x00007fce2d9cfab0&gt;
+./spec/models/venue_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/venue_spec.rb:9:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.venue_spec" name="Venue validations " file="./spec/models/venue_spec.rb" time="0.001152"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Validations:0x00007fce2d9cd260&gt;" type="NoMethodError">Failure/Error: subject { build(:venue) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Validations:0x00007fce2d9cd260&gt;
+./spec/models/venue_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/venue_spec.rb:10:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.venue_spec" name="Venue validations " file="./spec/models/venue_spec.rb" time="0.001123"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Validations:0x00007fce2d9ca830&gt;" type="NoMethodError">Failure/Error: subject { build(:venue) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Validations:0x00007fce2d9ca830&gt;
+./spec/models/venue_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/venue_spec.rb:11:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.venue_spec" name="Venue associations " file="./spec/models/venue_spec.rb" time="0.001273"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Associations:0x00007fce2c6e2948&gt;" type="NoMethodError">Failure/Error: subject { build(:venue) }
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::Associations:0x00007fce2c6e2948&gt;
+./spec/models/venue_spec.rb:4:in `block (2 levels) in &lt;main&gt;&apos;
+./spec/models/venue_spec.rb:15:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+<testcase classname="spec.models.venue_spec" name="Venue#full_address returns name and address combined" file="./spec/models/venue_spec.rb" time="0.001237"><failure message="undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::FullAddress:0x00007fce2c7199c0&gt;" type="NoMethodError">Failure/Error: venue = build(:venue, name: &apos;Test Venue&apos;, address: &apos;123 Main St&apos;)
+
+NoMethodError:
+  undefined method `build&apos; for #&lt;RSpec::ExampleGroups::Venue::FullAddress:0x00007fce2c7199c0&gt;
+./spec/models/venue_spec.rb:20:in `block (3 levels) in &lt;main&gt;&apos;</failure></testcase>
+</testsuite>

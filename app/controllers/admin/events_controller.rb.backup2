@@ -23,7 +23,6 @@ def show
 end
   
   def new
-    @venues = Venue.all.order(:name) unless @venues
     @event = Event.new
   end
   
@@ -38,7 +37,6 @@ end
   end
   
   def edit
-    @venues = Venue.all.order(:name) unless @venues
   end
   
   def update

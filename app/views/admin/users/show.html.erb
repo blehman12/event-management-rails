@@ -2,6 +2,13 @@
   <h2><%= @user.full_name %></h2>
   <div>
     <%= link_to "Edit User", edit_admin_user_path(@user), class: "btn btn-warning me-2" %>
+    <% unless @user == current_user %>
+      <%= button_to "Delete User", admin_user_path(@user), 
+          method: :delete,
+          onclick: "return confirm('Are you sure you want to delete this user? This action cannot be undone.')",
+          data: { turbo: false },
+          class: "btn btn-danger me-2" %>
+    <% end %>
     <%= link_to "Back to Users", admin_users_path, class: "btn btn-outline-secondary" %>
   </div>
 </div>
@@ -84,7 +91,7 @@
                 </td>
                 <td>
                   <span class="badge bg-<%= participant.rsvp_status == 'yes' ? 'success' : participant.rsvp_status == 'maybe' ? 'warning' : participant.rsvp_status == 'no' ? 'danger' : 'secondary' %>">
-                    <%= participant.rsvp_status.humanize %>
+                     <%= participant.rsvp_status_display %>
                   </span>
                 </td>
               </tr>

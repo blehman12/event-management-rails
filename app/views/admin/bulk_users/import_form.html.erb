@@ -10,7 +10,7 @@
         <h5>Upload CSV File</h5>
       </div>
       <div class="card-body">
-        <%= form_with url: import_csv_admin_bulk_users_path, method: :post, 
+        <%= form_with url: process_import_admin_bulk_users_path, method: :post, 
                       multipart: true, local: true do |form| %>
           
           <div class="mb-3">

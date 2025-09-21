@@ -1,0 +1,163 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2><%= @event.name %> - Participants</h2>
+  <div>
+    <%= link_to "Export CSV", export_participants_admin_event_path(@event, format: :csv), class: "btn btn-success me-2" %>
+    <%= link_to "Back to Event", admin_event_path(@event), class: "btn btn-outline-secondary me-2" %>
+    <%= link_to "Back to Events", admin_events_path, class: "btn btn-outline-primary" %>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="text-primary"><%= @participant_counts[:total] %></h5>
+        <p class="mb-0">Total</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="text-success"><%= @participant_counts[:confirmed] %></h5>
+        <p class="mb-0">Confirmed</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="text-warning"><%= @participant_counts[:maybe] %></h5>
+        <p class="mb-0">Maybe</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="text-danger"><%= @participant_counts[:declined] %></h5>
+        <p class="mb-0">Declined</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="text-secondary"><%= @participant_counts[:pending] %></h5>
+        <p class="mb-0">Pending</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="text-info"><%= @participant_counts[:checked_in] %></h5>
+        <p class="mb-0">Checked In</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add New Participant Form -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0">Add New Participant</h5>
+  </div>
+  <div class="card-body">
+    <%= form_with model: [@event, EventParticipant.new], url: add_participant_admin_event_path(@event), method: :post, local: true, data: { turbo: false }, class: "row g-3" do |f| %>
+      <div class="col-md-6">
+        <%= f.collection_select :user_id, @users, :id, 
+            proc { |u| "#{u.first_name} #{u.last_name} (#{u.email})" }, 
+            { prompt: "Select a user..." }, { class: "form-select", required: true } %>
+      </div>
+      <div class="col-md-4">
+        <%= f.select :role, 
+            options_for_select([['Attendee', 'attendee'], ['Vendor', 'vendor'], ['Organizer', 'organizer']], 'attendee'),
+            {}, { class: "form-select" } %>
+      </div>
+      <div class="col-md-2">
+        <%= f.submit "Add Participant", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Participants Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Event Participants</h5>
+    <div>
+      <small class="text-muted">Manage participants and send invitations</small>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Company</th>
+            <th>RSVP Status</th>
+            <th>Role</th>
+            <th>Checked In</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @participants.each do |participant| %>
+            <tr>
+              <td><%= participant.user.first_name %> <%= participant.user.last_name %></td>
+              <td><%= participant.user.email %></td>
+              <td><%= participant.user.company %></td>
+              <td>
+                <span class="badge bg-<%= participant.rsvp_status == 'yes' ? 'success' : 
+                                        participant.rsvp_status == 'maybe' ? 'warning' : 
+                                        participant.rsvp_status == 'no' ? 'danger' : 'secondary' %>">
+                  <%= participant.rsvp_status_display %>
+                </span>
+              </td>
+              <td>
+                <%= form_with url: update_participant_role_admin_event_path(@event), 
+                             method: :patch, local: true, data: { turbo: false }, class: "d-inline" do |pf| %>
+                  <%= pf.hidden_field :participant_id, value: participant.id %>
+                  <%= pf.select :role, 
+                      options_for_select([['Attendee', 'attendee'], ['Vendor', 'vendor'], ['Organizer', 'organizer']], participant.role),
+                      {}, { class: "form-select form-select-sm", onchange: "this.form.submit();" } %>
+                <% end %>
+              </td>
+              <td>
+                <% if participant.checked_in? %>
+                  <span class="badge bg-success">Yes</span><br>
+                  <small class="text-muted"><%= participant.checked_in_at.strftime('%m/%d %I:%M %p') %></small>
+                <% else %>
+                  <span class="badge bg-secondary">No</span>
+                <% end %>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm" role="group">
+                  <%= link_to "View", admin_user_path(participant.user), class: "btn btn-outline-primary" %>
+                  <%= button_to "Remove", remove_participant_admin_event_path(@event), 
+                      method: :delete, 
+                      params: { participant_id: participant.id },
+                      confirm: "Remove #{participant.user.first_name} #{participant.user.last_name} from this event?",
+                      data: { turbo: false },
+                      class: "btn btn-outline-danger" %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+          
+          <% if @participants.empty? %>
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                No participants registered for this event yet.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -15,7 +15,37 @@
   </head>
 
   <body <%= yield :body_data %>>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  
+  <body <%= yield :body_data %>>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <%= link_to "PTC Windchill Event", root_path, class: "navbar-brand" %>
+      
+      <div class="navbar-nav ms-auto d-flex align-items-center">
+        <% if user_signed_in? %>
+          <span class="navbar-text me-3">
+            Hello, <%= current_user.respond_to?(:full_name) ? current_user.full_name : "#{current_user.first_name} #{current_user.last_name}" %>
+            <small class="text-muted">(<%= role_display_name(current_user) %>)</small>
+          </span>
+          <% if current_user&.admin? %>
+            <span class="me-3">
+              <%= link_to "Dashboard", admin_root_path, class: "btn btn-sm btn-outline-light me-1" %>
+              <%= link_to "Events", admin_events_path, class: "btn btn-sm btn-outline-light me-1" %>
+              <%= link_to "Venues", admin_venues_path, class: "btn btn-sm btn-outline-light me-1" %>
+              <%= link_to "Users", admin_users_path, class: "btn btn-sm btn-outline-light" %>
+            </span>
+          <% end %>
+          <%= button_to "Sign Out", destroy_user_session_path, method: :delete, 
+                        class: "btn btn-link nav-link p-0 border-0", 
+                        style: "color: rgba(255,255,255,.75); background: none;",
+                        form: { style: "display: inline;" } %>
+        <% else %>
+          <%= link_to "Sign In", new_user_session_path, class: "nav-link" %>
+        <% end %>
+      </div>
+    </div>
+  </nav>
+	
       <div class="container">
         <%= link_to "PTC Windchill Event", root_path, class: "navbar-brand" %>
         
@@ -25,7 +55,7 @@
               Hello, <%= current_user.respond_to?(:full_name) ? current_user.full_name : "#{current_user.first_name} #{current_user.last_name}" %>
               <small class="text-muted">(<%= role_display_name(current_user) %>)</small>
             </span>
-            <% if user_is_admin?(current_user) %>
+			<% if current_user&.admin? %>
               <span class="me-3">
                 <%= link_to "Dashboard", admin_root_path, class: "btn btn-sm btn-outline-light me-1" %>
                 <%= link_to "Events", admin_events_path, class: "btn btn-sm btn-outline-light me-1" %>

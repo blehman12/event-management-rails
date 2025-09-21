@@ -46,16 +46,16 @@
         <div class="card-body">
           <% unless defined?(@deadline_passed) && @deadline_passed %>
             <div class="btn-group" role="group">
-              <%= button_to "Yes", rsvp_path('yes'), 
-                    params: { event_id: @current_event.id }, 
+              <%= button_to "Yes", update_rsvp_path(@current_event), 
+                    params: { rsvp_status: 'yes' }, 
                     method: :patch,
                     class: "btn #{(@user_rsvp_status.to_s == 'yes' || @user_rsvp_status.to_s == '1') ? 'btn-success' : 'btn-outline-success'}" %>
-              <%= button_to "Maybe", rsvp_path('maybe'), 
-                    params: { event_id: @current_event.id }, 
+              <%= button_to "Maybe", update_rsvp_path(@current_event), 
+                    params: { rsvp_status: 'maybe' }, 
                     method: :patch,
                     class: "btn #{(@user_rsvp_status.to_s == 'maybe' || @user_rsvp_status.to_s == '3') ? 'btn-warning' : 'btn-outline-warning'}" %>
-              <%= button_to "No", rsvp_path('no'), 
-                    params: { event_id: @current_event.id }, 
+              <%= button_to "No", update_rsvp_path(@current_event), 
+                    params: { rsvp_status: 'no' }, 
                     method: :patch,
                     class: "btn #{(@user_rsvp_status.to_s == 'no' || @user_rsvp_status.to_s == '2') ? 'btn-danger' : 'btn-outline-danger'}" %>
             </div>
@@ -96,9 +96,18 @@
         <div class="card-body">
           <% unless defined?(@deadline_passed) && @deadline_passed %>
             <div class="btn-group" role="group">
-              <%= button_to "Yes", rsvp_path('yes'), method: :patch, class: "btn btn-success" %>
-              <%= button_to "Maybe", rsvp_path('maybe'), method: :patch, class: "btn btn-warning" %>
-              <%= button_to "No", rsvp_path('no'), method: :patch, class: "btn btn-outline-danger" %>
+              <%= button_to "Yes", update_rsvp_path(@event), 
+                    params: { rsvp_status: 'yes' }, 
+                    method: :patch, 
+                    class: "btn btn-success" %>
+              <%= button_to "Maybe", update_rsvp_path(@event), 
+                    params: { rsvp_status: 'maybe' }, 
+                    method: :patch, 
+                    class: "btn btn-warning" %>
+              <%= button_to "No", update_rsvp_path(@event), 
+                    params: { rsvp_status: 'no' }, 
+                    method: :patch, 
+                    class: "btn btn-outline-danger" %>
             </div>
           <% else %>
             <p class="text-muted">RSVP deadline has passed.</p>

@@ -1,0 +1,58 @@
+
+DashboardController
+  GET #index
+    returns a success response
+    assigns instance variables
+  when user is not signed in
+    redirects to sign in page
+
+EventNotificationMailer
+  rsvp_confirmation
+    renders the headers
+    renders the body
+
+validations
+  is expected to validate that :name cannot be empty/falsy
+  is expected to validate that :event_date cannot be empty/falsy
+  is expected to validate that :rsvp_deadline cannot be empty/falsy
+  is expected to validate that :max_attendees cannot be empty/falsy
+  is expected to validate that :max_attendees looks like a number greater than 0
+
+associations
+  is expected to belong to venue required: true
+  is expected to belong to creator class_name => User required: true
+  is expected to have many event_participants
+  is expected to have many users through event_participants
+
+User
+  validations
+    is expected to validate that :first_name cannot be empty/falsy
+    is expected to validate that :last_name cannot be empty/falsy
+    is expected to validate that :phone cannot be empty/falsy
+    is expected to validate that :company cannot be empty/falsy
+    is expected to validate that :email cannot be empty/falsy
+    is expected to validate that :email is case-insensitively unique
+  enums
+    is expected to define :role as an enum backed by an integer with values ‹{attendee: 0, admin: 1}›
+  #full_name
+    returns the full name
+  admin functionality
+    identifies admin users correctly
+
+Venue
+  validations
+    is expected to validate that :name cannot be empty/falsy
+    is expected to validate that :address cannot be empty/falsy
+    is expected to validate that :capacity cannot be empty/falsy
+    is expected to validate that :capacity looks like a number greater than 0
+    is expected to validate that :name is case-sensitively unique
+  associations
+    is expected to have many events dependent => destroy
+  #full_address
+    returns name and address combined
+
+1 deprecation warning total
+
+Finished in 1.98 seconds (files took 20.29 seconds to load)
+30 examples, 0 failures
+

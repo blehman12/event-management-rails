@@ -23,7 +23,6 @@ def show
 end
   
   def new
-    @venues = Venue.all.order(:name) unless @venues
     @event = Event.new
   end
   
@@ -38,7 +37,6 @@ end
   end
   
   def edit
-    @venues = Venue.all.order(:name) unless @venues
   end
   
   def update
@@ -232,19 +230,6 @@ end
   end
   
   def participant_update_params
-    # Handle both event_participant wrapped and direct parameters
-    if params[:event_participant].present?
-      params.require(:event_participant).permit(:role, :rsvp_status, :rsvp_answers)
-    elsif params[:rsvp_status].present? || params[:role].present?
-      # Direct parameters from dropdown forms
-      params.permit(:role, :rsvp_status, :rsvp_answers)
-    else
-      # Fallback: try to extract from any available parameters
-      permitted_params = {}
-      permitted_params[:role] = params[:role] if params[:role].present?
-      permitted_params[:rsvp_status] = params[:rsvp_status] if params[:rsvp_status].present?
-      permitted_params[:rsvp_answers] = params[:rsvp_answers] if params[:rsvp_answers].present?
-      permitted_params
-    end
+    params.require(:event_participant).permit(:role, :rsvp_status, :rsvp_answers)
   end
 end

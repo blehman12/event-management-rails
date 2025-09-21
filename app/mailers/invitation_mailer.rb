@@ -1,11 +1,11 @@
 class InvitationMailer < ApplicationMailer
   default from: ENV['GMAIL_USERNAME'] || 'noreply@example.com'
-
+  
   def event_invitation(user, event)
     @user = user
     @event = event
-    # Fix the URL generation
-    @rsvp_url = "#{root_url(host: 'localhost:3000')}rsvp"
+    # Better approach using Rails URL helpers
+    @rsvp_url = event_rsvp_url(@event, host: 'localhost:3000')
     
     mail(
       to: @user.email,

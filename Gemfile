@@ -1,78 +1,55 @@
 source "https://rubygems.org"
-
 ruby "3.3.3"
 
-# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
+# Rails framework
 gem "rails", "~> 7.1.5", ">= 7.1.5.2"
 
-# The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
-gem "sprockets-rails"
+# Core Rails gems
+gem "sprockets-rails"          # Asset pipeline
+gem "sqlite3", ">= 1.4"       # Database for development
+gem "puma", ">= 5.0"          # Web server
+gem "importmap-rails"         # JavaScript with ESM import maps
+gem "turbo-rails"             # Hotwire SPA-like page accelerator
+gem "stimulus-rails"          # Hotwire modest JavaScript framework
+gem "jbuilder"                # Build JSON APIs
+gem "bootsnap", require: false # Reduces boot times through caching
 
-# Use sqlite3 as the database for Active Record
-gem "sqlite3", ">= 1.4"
-
-# Use the Puma web server [https://github.com/puma/puma]
-gem "puma", ">= 5.0"
-
-# Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
-gem "importmap-rails"
-
-# Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
-gem "turbo-rails"
-
-# Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
-gem "stimulus-rails"
-
-# Build JSON APIs with ease [https://github.com/rails/jbuilder]
-gem "jbuilder"
-
-# Use Redis adapter to run Action Cable in production
-# gem "redis", ">= 4.0.1"
-
-# Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
-# gem "kredis"
-
-# Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
-# gem "bcrypt", "~> 3.1.7"
-
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
+# Platform-specific gems
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Reduces boot times through caching; required in config/boot.rb
-gem "bootsnap", require: false
-
-# Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-# gem "image_processing", "~> 1.2"
+# Application-specific gems
+gem "devise"                  # Authentication
+gem "simple_form"             # Form helpers
+gem "icalendar"              # Calendar functionality
+gem "csv"                    # CSV processing
 
 group :development, :test do
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ]
+  gem "rspec-rails"           # Testing framework
+  gem "factory_bot_rails"     # Test data factories
+  gem "shoulda-matchers"      # Testing matchers
+  gem "database_cleaner-active_record" # Database cleaning for tests
+  gem "dotenv-rails"          # Environment variables
 end
 
 group :development do
-  # Use console on exceptions pages [https://github.com/rails/web-console]
-  gem "web-console"
-
-  # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
-  # gem "rack-mini-profiler"
-
-  # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
-  # gem "spring"
+  gem "web-console"           # Console on exceptions pages
+  # gem "rack-mini-profiler"  # Speed badges (commented out)
+  # gem "spring"              # Speed up commands (commented out)
 end
 
+group :test do
+  gem "faker"                 # Generate fake data for tests
+  gem "capybara"             # Integration testing
+  gem "selenium-webdriver"   # Browser automation for tests
+  gem 'rspec_junit_formatter'
+  gem 'rails-controller-testing'
 
-gem 'devise'
-gem 'simple_form'
-gem 'icalendar'
-gem 'csv'
-
-group :development, :test do
-  gem 'rspec-rails'
-  gem 'factory_bot_rails'
-  gem 'shoulda-matchers'
-  gem 'capybara'
-  gem 'selenium-webdriver'
-  gem 'database_cleaner-active_record'
-  gem 'dotenv-rails'
 
 end
+
+# Optional gems (commented out)
+# gem "redis", ">= 4.0.1"
+# gem "kredis"
+# gem "bcrypt", "~> 3.1.7"
+# gem "image_processing", "~> 1.2"

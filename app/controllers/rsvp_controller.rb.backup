@@ -58,10 +58,10 @@ class RsvpController < ApplicationController
         flash[:notice] = "RSVP updated successfully!"
       end
       
-      redirect_to root_path
+      redirect_to rsvp_path
     else
       flash[:alert] = "Failed to update RSVP: #{@participant.errors.full_messages.join(', ')}"
-      redirect_to root_path
+      redirect_to rsvp_path
     end
   end
 end

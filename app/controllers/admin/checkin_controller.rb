@@ -145,4 +145,13 @@ class Admin::CheckinController < Admin::BaseController
   def set_event
     @event = Event.find(params[:id])
   end
+  
+  def success
+    @participant = EventParticipant.find(params[:id])
+    @event = @participant.event
+    @user = @participant.user
+  rescue ActiveRecord::RecordNotFound
+   @participant = @event = @user = nil
+  end
+  
 end

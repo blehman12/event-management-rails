@@ -37,6 +37,7 @@ class Event < ApplicationRecord
     rsvp_deadline.present? && Time.current <= rsvp_deadline
   end
 
+
   def spots_remaining
     max_attendees - attendees_count
   end
