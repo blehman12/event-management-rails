@@ -1,5 +1,6 @@
 class CreateVenues < ActiveRecord::Migration[7.1]
   def change
+    return if table_exists?(venues)
     create_table :venues do |t|
       t.string :name
       t.text :address
