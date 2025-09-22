@@ -1,250 +1,161 @@
 class Admin::EventsController < Admin::BaseController
-  before_action :set_event, only: [:show, :edit, :update, :destroy, :participants, :add_participant, :update_participant_role, :remove_participant, :export_participants, :bulk_invite_participants]
-  
+  before_action :set_event, only: [:show, :edit, :update, :destroy, :participants]
+  before_action :load_venues, only: [:new, :create, :edit, :update]
+  before_action :load_users, only: [:new, :create, :edit, :update]
+
   def index
-    @events = Event.order(:event_date)
+    @events = Event.includes(:venue, :creator, :event_participants)
+                   .order(:event_date)
+                   .page(params[:page])
+                   .per(20)
   end
-  
-def show
-  @participants = @event.event_participants.includes(:user)
-  @participant_counts = {
-    total: @participants.count,
-    confirmed: @participants.where(rsvp_status: 'yes').count,
-    maybe: @participants.where(rsvp_status: 'maybe').count,
-    declined: @participants.where(rsvp_status: 'no').count,
-    pending: @participants.where(rsvp_status: 'pending').count,
-    checked_in: @participants.where.not(checked_in_at: nil).count
-  }
-  
-  # Add these lines for the role-based counts
-  @organizers = @participants.where(role: 'organizer')
-  @vendors = @participants.where(role: 'vendor') 
-  @attendees = @participants.where(role: 'attendee')
-end
-  
-  def new
-    @venues = Venue.all.order(:name) unless @venues
-    @event = Event.new
-  end
-  
-  def create
-    @event = Event.new(event_params)
+
+  def show
+    @participants = @event.event_participants.includes(:user)
     
-    if @event.save
-      redirect_to admin_event_path(@event), notice: 'Event was successfully created.'
-    else
-      render :new
-    end
-  end
-  
-  def edit
-    @venues = Venue.all.order(:name) unless @venues
-  end
-  
-  def update
-    if @event.update(event_params)
-      redirect_to admin_event_path(@event), notice: 'Event was successfully updated.'
-    else
-      render :edit
-    end
-  end
-  
-  def destroy
-    @event.destroy
-    redirect_to admin_events_path, notice: 'Event was successfully deleted.'
-  end
-  
-  # Participants management
-  def participants
-    @participants = @event.event_participants.includes(:user).order(:role, 'users.last_name')
-    @users = User.where.not(id: @event.event_participants.select(:user_id)).order(:last_name, :first_name)
-    @participant_counts = {
-      total: @participants.count,
-      confirmed: @participants.where(rsvp_status: 'yes').count,
-      maybe: @participants.where(rsvp_status: 'maybe').count,
-      declined: @participants.where(rsvp_status: 'no').count,
-      pending: @participants.where(rsvp_status: 'pending').count,
+    # Split participants by role for the view
+    @organizers = @participants.where(role: 'organizer')
+    @vendors = @participants.where(role: 'vendor') 
+    @attendees = @participants.where(role: 'attendee')
+    
+    @stats = {
+      total_participants: @participants.count,
+      yes_responses: @participants.where(rsvp_status: 'yes').count,
+      no_responses: @participants.where(rsvp_status: 'no').count,
+      maybe_responses: @participants.where(rsvp_status: 'maybe').count,
+      pending_responses: @participants.where(rsvp_status: 'pending').count,
       checked_in: @participants.where.not(checked_in_at: nil).count
     }
   end
-  
-  def add_participant
-    @participant = @event.event_participants.build(participant_params)
-    
-    if @participant.save
-      redirect_to participants_admin_event_path(@event), 
-                  notice: 'Participant was successfully added.'
+
+  def new
+    @event = Event.new
+  end
+
+  def create
+    @event = Event.new(event_params)
+    @event.creator = current_user
+
+    if @event.save
+      redirect_to admin_event_path(@event), notice: 'Event created successfully.'
     else
-      redirect_to participants_admin_event_path(@event), 
-                  alert: 'Error adding participant: ' + @participant.errors.full_messages.join(', ')
+      render :new, status: :unprocessable_entity
     end
   end
-  
-  def update_participant_role
-    @participant = @event.event_participants.find(params[:participant_id])
-    
-    if @participant.update(participant_update_params)
-      redirect_to participants_admin_event_path(@event), 
-                  notice: 'Participant role was successfully updated.'
+
+  def edit
+    # @event set by before_action
+    # @venues and @users loaded by before_action
+  end
+
+  def update
+    puts "Received params: #{params[:event][:custom_questions].inspect}" # Debug line
+
+    if @event.update(event_params)
+      redirect_to admin_event_path(@event), notice: 'Event updated successfully.'
     else
-      redirect_to participants_admin_event_path(@event), 
-                  alert: 'Error updating participant.'
+      render :edit, status: :unprocessable_entity
     end
   end
-  
-  def remove_participant
-    @participant = @event.event_participants.find(params[:participant_id])
-    @participant.destroy
-    redirect_to participants_admin_event_path(@event), 
-                notice: 'Participant was successfully removed.'
+
+  def destroy
+    @event.destroy
+    redirect_to admin_events_path, notice: 'Event deleted successfully.'
   end
-  
-  def export_participants
+
+  def participants
     @participants = @event.event_participants.includes(:user)
+  end
+
+  # Bulk actions
+  def bulk_invite
+    @event = Event.find(params[:id])
+    user_ids = params[:user_ids] || []
     
+    if user_ids.empty?
+      redirect_to admin_event_path(@event), alert: 'No users selected for invitation.'
+      return
+    end
+
+    success_count = 0
+    user_ids.each do |user_id|
+      user = User.find(user_id)
+      participant = @event.event_participants.find_or_initialize_by(user: user)
+      
+      if participant.new_record?
+        participant.role = 'attendee'
+        participant.rsvp_status = 'pending'
+        participant.invited_at = Time.current
+        if participant.save
+          success_count += 1
+          # TODO: Send invitation email
+        end
+      end
+    end
+
+    redirect_to admin_event_path(@event), 
+                notice: "Successfully invited #{success_count} users to the event."
+  end
+
+  def export_participants
+    @event = Event.find(params[:id])
+    @participants = @event.event_participants.includes(:user)
+
     respond_to do |format|
       format.csv do
         csv_data = CSV.generate(headers: true) do |csv|
-          csv << ['First Name', 'Last Name', 'Email', 'Company', 'Phone', 'Role', 'RSVP Status', 'Checked In', 'Check-in Time']
+          csv << ['Name', 'Email', 'Company', 'Phone', 'RSVP Status', 'Role', 'Checked In', 'Check-in Time']
           
           @participants.each do |participant|
-            user = participant.user
             csv << [
-              user.first_name,
-              user.last_name,
-              user.email,
-              user.company,
-              user.phone,
+              "#{participant.user.first_name} #{participant.user.last_name}",
+              participant.user.email,
+              participant.user.company,
+              participant.user.phone,
+              participant.rsvp_status.humanize,
               participant.role.humanize,
-              participant.rsvp_status_display,
               participant.checked_in? ? 'Yes' : 'No',
               participant.checked_in_at&.strftime('%m/%d/%Y %I:%M %p')
             ]
           end
         end
-        
+
         send_data csv_data, 
                   filename: "#{@event.name.parameterize}-participants-#{Date.current}.csv",
                   type: 'text/csv'
       end
-      
-      format.html { redirect_to participants_admin_event_path(@event) }
     end
   end
-  
-  def bulk_invite_participants
-    participant_ids = params[:participant_ids] || []
-    
-    if participant_ids.empty?
-      redirect_to participants_admin_event_path(@event), 
-                  alert: 'Please select participants to invite.'
-      return
-    end
-    
-    participants = @event.event_participants.where(id: participant_ids).includes(:user)
-    email_count = 0
-    
-    participants.each do |participant|
-      begin
-        InvitationMailer.event_invitation(participant.user, @event).deliver_now
-        participant.update(invited_at: Time.current)
-        email_count += 1
-      rescue => e
-        Rails.logger.error "Failed to send invitation to #{participant.user.email}: #{e.message}"
-      end
-    end
-    
-    redirect_to participants_admin_event_path(@event), 
-                notice: "Successfully sent #{email_count} invitation emails."
-  end
-  
-  # Bulk operations for events
-  def bulk_actions
-    # This would be for bulk operations on multiple events
-    @events = Event.all
-  end
-  
-  def bulk_activate
-    event_ids = params[:event_ids] || []
-    Event.where(id: event_ids).update_all(active: true)
-    redirect_to admin_events_path, notice: "#{event_ids.count} events activated."
-  end
-  
-  def bulk_deactivate
-    event_ids = params[:event_ids] || []
-    Event.where(id: event_ids).update_all(active: false)
-    redirect_to admin_events_path, notice: "#{event_ids.count} events deactivated."
-  end
-  
-  def bulk_delete
-    event_ids = params[:event_ids] || []
-    Event.where(id: event_ids).destroy_all
-    redirect_to admin_events_path, notice: "#{event_ids.count} events deleted."
-  end
-  
-  def export
-    @events = Event.all
-    
-    respond_to do |format|
-      format.csv do
-        csv_data = CSV.generate(headers: true) do |csv|
-          csv << ['Name', 'Date', 'Start Time', 'End Time', 'Venue', 'Max Attendees', 'Current Attendees', 'Active']
-          
-          @events.each do |event|
-            csv << [
-              event.name,
-              event.event_date&.strftime('%m/%d/%Y'),
-              event.start_time&.strftime('%I:%M %p'),
-              event.end_time&.strftime('%I:%M %p'),
-              event.venue&.name,
-              event.max_attendees,
-              event.event_participants.count,
-              event.active? ? 'Yes' : 'No'
-            ]
-          end
-        end
-        
-        send_data csv_data, 
-                  filename: "events-export-#{Date.current}.csv",
-                  type: 'text/csv'
-      end
-      
-      format.html { redirect_to admin_events_path }
-    end
-  end
-  
+
   private
-  
+
   def set_event
     @event = Event.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    redirect_to admin_events_path, alert: 'Event not found.'
   end
-  
-  def event_params
-    params.require(:event).permit(:name, :description, :event_date, :start_time, :end_time, 
-                                  :venue_id, :max_attendees, :rsvp_deadline, :active,
-                                  custom_questions: [])
-  end
-  
-  def participant_params
-    params.require(:event_participant).permit(:user_id, :role, :rsvp_answers)
-  end
-  
-  def participant_update_params
-    # Handle both event_participant wrapped and direct parameters
-    if params[:event_participant].present?
-      params.require(:event_participant).permit(:role, :rsvp_status, :rsvp_answers)
-    elsif params[:rsvp_status].present? || params[:role].present?
-      # Direct parameters from dropdown forms
-      params.permit(:role, :rsvp_status, :rsvp_answers)
-    else
-      # Fallback: try to extract from any available parameters
-      permitted_params = {}
-      permitted_params[:role] = params[:role] if params[:role].present?
-      permitted_params[:rsvp_status] = params[:rsvp_status] if params[:rsvp_status].present?
-      permitted_params[:rsvp_answers] = params[:rsvp_answers] if params[:rsvp_answers].present?
-      permitted_params
+
+  def load_venues
+    @venues = Venue.order(:name)
+    
+    if @venues.empty?
+      flash.now[:warning] = "No venues available. Please create a venue first."
     end
+  end
+
+  def load_users
+    @users = User.where(role: 'attendee').order(:first_name, :last_name)
+  end
+
+  def event_params
+    params.require(:event).permit(
+      :name,
+      :description,
+      :venue_id,
+      :event_date,
+      :start_time,
+      :end_time,
+      :max_attendees,
+      :rsvp_deadline,
+      custom_questions: []
+    )
   end
 end

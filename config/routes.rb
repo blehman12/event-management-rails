@@ -73,24 +73,24 @@ Rails.application.routes.draw do
       end
     end
 
-    # Event management
-    resources :events do
-      member do
-        get 'participants'
-        post 'add_participant'
-        patch 'update_participant_role'
-        delete 'remove_participant'
-        get 'export_participants'
-        post 'bulk_invite_participants'
-      end
-      collection do
-        get 'bulk_actions'
-        post 'bulk_activate'
-        post 'bulk_deactivate'
-        post 'bulk_delete'
-        get 'export'
-      end
-    end
+  # Event management
+resources :events do
+  member do
+    get :participants
+    post :add_participant
+    patch :update_participant_role
+    delete :remove_participant
+    get :export_participants
+    post :bulk_invite_participants
+  end
+  collection do
+    get :bulk_actions
+    post :bulk_activate
+    post :bulk_deactivate
+    post :bulk_delete
+    get :export
+  end
+end
 
     # Venue management
     resources :venues do

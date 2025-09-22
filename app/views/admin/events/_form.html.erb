@@ -50,15 +50,17 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <%= form.label :start_time, class: "form-label" %>
-              <%= form.time_field :start_time, class: "form-control" %>
+              <%= form.time_field :start_time, class: "form-control", 
+                  value: @event.start_time&.strftime("%H:%M") %>
             </div>
             <div class="col-md-6 mb-3">
               <%= form.label :end_time, class: "form-label" %>
-              <%= form.time_field :end_time, class: "form-control" %>
+              <%= form.time_field :end_time, class: "form-control", 
+                  value: @event.end_time&.strftime("%H:%M") %>
             </div>
           </div>
 
-          <!-- ✨ CUSTOM QUESTIONS SECTION ✨ -->
+          <!-- CUSTOM QUESTIONS SECTION - DYNAMIC -->
           <div class="mb-4">
             <label class="form-label fw-bold">Custom RSVP Questions</label>
             <small class="text-muted d-block mb-2">
@@ -75,7 +77,7 @@
                           class: "form-control", 
                           placeholder: "Enter question (e.g., 'Any dietary restrictions?')" %>
                       <button type="button" class="btn btn-outline-danger remove-question">
-                        <i class="fas fa-trash"></i>
+                        Remove
                       </button>
                     </div>
                   </div>
@@ -84,10 +86,10 @@
             </div>
             
             <button type="button" id="add-question" class="btn btn-outline-primary btn-sm mt-2">
-              <i class="fas fa-plus"></i> Add Question
+              + Add Question
             </button>
           </div>
-          <!-- ✨ END CUSTOM QUESTIONS SECTION ✨ -->
+          <!-- END CUSTOM QUESTIONS SECTION -->
 
           <div class="d-grid gap-2 d-md-flex justify-content-md-end">
             <%= link_to "Cancel", admin_events_path, class: "btn btn-outline-secondary me-md-2" %>
@@ -106,24 +108,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (addButton && container) {
     // Add new question
-    addButton.addEventListener('click', function() {
+    addButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      
       const questionRow = document.createElement('div');
       questionRow.className = 'custom-question-row mb-2';
-      questionRow.innerHTML = `
-        <div class="input-group">
-          <input type="text" name="event[custom_questions][]" class="form-control" 
-                 placeholder="Enter question (e.g., 'Any dietary restrictions?')">
-          <button type="button" class="btn btn-outline-danger remove-question">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      `;
+      questionRow.innerHTML = 
+        '<div class="input-group">' +
+          '<input type="text" name="event[custom_questions][]" class="form-control" ' +
+                 'placeholder="Enter question (e.g., \'Any dietary restrictions?\')">' +
+          '<button type="button" class="btn btn-outline-danger remove-question">Remove</button>' +
+        '</div>';
+      
       container.appendChild(questionRow);
     });
 
-    // Remove question
+    // Remove question (using event delegation)
     container.addEventListener('click', function(e) {
-      if (e.target.closest('.remove-question')) {
+      if (e.target.classList.contains('remove-question')) {
         e.target.closest('.custom-question-row').remove();
       }
     });

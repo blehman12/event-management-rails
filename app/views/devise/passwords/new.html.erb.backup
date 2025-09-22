@@ -4,7 +4,7 @@
   <%= f.error_notification %>
 
   <div class="form-inputs">
-    <%= f.email_field :email, class: "form-control",
+    <%= f.input :email,
                 required: true,
                 autofocus: true,
                 input_html: { autocomplete: "email" } %>
