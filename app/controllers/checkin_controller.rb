@@ -1,7 +1,11 @@
+# Create app/controllers/checkin_controller.rb
+
 class CheckinController < ApplicationController
+  # No authentication required for check-in process
+  
   def index
     # Main check-in interface
-    redirect_to checkin_scan_path
+    redirect_to scan_checkin_path
   end
   
   def scan
@@ -44,7 +48,7 @@ class CheckinController < ApplicationController
     end
   end
   
-  def process_checkin
+  def process
     # Process the actual check-in
     token = params[:token]
     event_id = params[:event_id]
@@ -61,10 +65,10 @@ class CheckinController < ApplicationController
       # Perform check-in
       participant.check_in!(method: :qr_code)
       
-      redirect_to checkin_success_path(participant.id), 
+      redirect_to success_checkin_path(participant.id), 
                   notice: "Successfully checked in!"
     elsif participant&.checked_in?
-      redirect_to checkin_success_path(participant.id),
+      redirect_to success_checkin_path(participant.id),
                   alert: "Already checked in at #{participant.checked_in_at.strftime('%I:%M %p')}"
     else
       redirect_to checkin_path, alert: "Invalid check-in information"
@@ -82,20 +86,4 @@ class CheckinController < ApplicationController
       redirect_to checkin_path, alert: "Check-in information not found"
     end
   end
-  
-def recent_checkins
-  @recent_checkins = EventParticipant.includes(:user, :event)
-                                    .where.not(checked_in_at: nil)
-                                    .order(checked_in_at: :desc)
-                                    .limit(10)
-  
-  render json: @recent_checkins.map do |checkin|
-    {
-      user_name: "#{checkin.user.first_name} #{checkin.user.last_name}",
-      event_name: checkin.event.name,
-      checked_in_at: checkin.checked_in_at.strftime('%m/%d %I:%M %p')
-    }
-  end
-end
-
 end
