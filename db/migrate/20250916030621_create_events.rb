@@ -1,6 +1,6 @@
 class CreateEvents < ActiveRecord::Migration[7.1]
   def change
-    return if table_exists?(events)
+    return if table_exists?(:events)
     create_table :events do |t|
       t.string :name
       t.text :description
