@@ -27,13 +27,20 @@ gem "kaminari"
 # UI
 gem "bootstrap", "~> 5.3"
 
+# Add to your Gemfile:
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ]
   gem "rspec-rails"
   gem "factory_bot_rails"
-  gem "sqlite3", "~> 1.4"  # Add this line
-end
+  gem "shoulda-matchers"
+  gem "sqlite3", "~> 1.4"
+  gem "capybara"
+  gem "selenium-webdriver"
+  gem "database_cleaner-active_record"  # Add this
+  gem "rails-controller-testing"  # Add this
+  gem "dotenv-rails"
 
+end
 
 group :development do
   gem "web-console"
