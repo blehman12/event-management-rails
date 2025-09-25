@@ -67,3 +67,24 @@ Shoulda::Matchers.configure do |config|
     with.library :rails
   end
 end
+# System test configuration
+RSpec.configure do |config|
+  # Include Warden test helpers for authentication in system tests
+  config.include Warden::Test::Helpers
+
+  # Clean up Warden after each test
+  config.after :each do
+    Warden.test_reset!
+  end
+
+  # Configure Capybara for system tests
+  config.before(:each, type: :system) do
+    driven_by :selenium_chrome_headless
+  end
+end
+
+# Configure Capybara
+Capybara.configure do |config|
+  config.default_max_wait_time = 5
+  config.default_driver = :selenium_chrome_headless
+end

@@ -39,7 +39,8 @@
                     <%= link_to "View", admin_venue_path(venue), class: "btn btn-outline-primary" %>
                     <%= link_to "Edit", edit_admin_venue_path(venue), class: "btn btn-outline-secondary" %>
                     <% if venue.events.empty? %>
-                      <%= button_to "Delete", admin_venue_path(venue), method: :delete, form_class: "d-inline", confirm: "Are you sure?", class: "btn btn-outline-danger" %>
+                      <%= link_to "Delete", admin_venue_path(venue), method: :delete, 
+                                  confirm: "Are you sure?", class: "btn btn-outline-danger" %>
                     <% end %>
                   </div>
                 </td>

@@ -1,5 +1,7 @@
+require 'csv'
+
 class Admin::EventsController < Admin::BaseController
-  before_action :set_event, only: [:show, :edit, :update, :destroy, :participants]
+  before_action :set_event, only: [:show, :edit, :update, :destroy, :participants, :add_participant, :export_participants, :bulk_invite]
   before_action :load_venues, only: [:new, :create, :edit, :update]
   before_action :load_users, only: [:new, :create, :edit, :update]
 
@@ -20,10 +22,10 @@ class Admin::EventsController < Admin::BaseController
     
     @stats = {
       total_participants: @participants.count,
-      yes_responses: @participants.where(rsvp_status: 'yes').count,
-      no_responses: @participants.where(rsvp_status: 'no').count,
-      maybe_responses: @participants.where(rsvp_status: 'maybe').count,
-      pending_responses: @participants.where(rsvp_status: 'pending').count,
+      yes_responses: @participants.joins(:user).where(users: { rsvp_status: User.rsvp_statuses[:yes] }).count,
+      no_responses: @participants.joins(:user).where(users: { rsvp_status: User.rsvp_statuses[:no] }).count,
+      maybe_responses: @participants.joins(:user).where(users: { rsvp_status: User.rsvp_statuses[:maybe] }).count,
+      pending_responses: @participants.joins(:user).where(users: { rsvp_status: User.rsvp_statuses[:pending] }).count,
       checked_in: @participants.where.not(checked_in_at: nil).count
     }
   end
@@ -49,8 +51,6 @@ class Admin::EventsController < Admin::BaseController
   end
 
   def update
-    puts "Received params: #{params[:event][:custom_questions].inspect}" # Debug line
-
     if @event.update(event_params)
       redirect_to admin_event_path(@event), notice: 'Event updated successfully.'
     else
@@ -65,11 +65,30 @@ class Admin::EventsController < Admin::BaseController
 
   def participants
     @participants = @event.event_participants.includes(:user)
+    
+    @participant_counts = {
+      total: @participants.count,
+      yes: @participants.joins(:user).where(users: { rsvp_status: User.rsvp_statuses[:yes] }).count,
+      no: @participants.joins(:user).where(users: { rsvp_status: User.rsvp_statuses[:no] }).count,
+      maybe: @participants.joins(:user).where(users: { rsvp_status: User.rsvp_statuses[:maybe] }).count,
+      pending: @participants.joins(:user).where(users: { rsvp_status: User.rsvp_statuses[:pending] }).count
+    }
+    
+    # Provide users for the dropdown (exclude existing participants)
+    @users = User.where.not(id: @participants.select(:user_id)).order(:first_name, :last_name)
   end
 
-  # Bulk actions
+  def add_participant
+    @participant = @event.event_participants.build(participant_params)
+    
+    if @participant.save
+      redirect_to participants_admin_event_path(@event), notice: 'Participant added successfully.'
+    else
+      redirect_to participants_admin_event_path(@event), alert: 'Failed to add participant.'
+    end
+  end
+
   def bulk_invite
-    @event = Event.find(params[:id])
     user_ids = params[:user_ids] || []
     
     if user_ids.empty?
@@ -98,7 +117,6 @@ class Admin::EventsController < Admin::BaseController
   end
 
   def export_participants
-    @event = Event.find(params[:id])
     @participants = @event.event_participants.includes(:user)
 
     respond_to do |format|
@@ -112,7 +130,7 @@ class Admin::EventsController < Admin::BaseController
               participant.user.email,
               participant.user.company,
               participant.user.phone,
-              participant.rsvp_status.humanize,
+              participant.user.rsvp_status.humanize,
               participant.role.humanize,
               participant.checked_in? ? 'Yes' : 'No',
               participant.checked_in_at&.strftime('%m/%d/%Y %I:%M %p')
@@ -143,6 +161,10 @@ class Admin::EventsController < Admin::BaseController
 
   def load_users
     @users = User.where(role: 'attendee').order(:first_name, :last_name)
+  end
+
+  def participant_params
+    params.require(:event_participant).permit(:user_id, :role)
   end
 
   def event_params

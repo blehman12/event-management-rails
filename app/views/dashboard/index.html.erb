@@ -56,15 +56,25 @@
       <div class="card-header">
         <h5>Your Profile</h5>
       </div>
-      <div class="card-body">
-        <p><strong>Name:</strong> <%= current_user.respond_to?(:full_name) ? current_user.full_name : "#{current_user.first_name} #{current_user.last_name}" %></p>
-        <p><strong>Email:</strong> <%= current_user.email %></p>
-        <p><strong>Company:</strong> <%= current_user.company %></p>
-        <% if current_user.phone %>
-          <p><strong>Phone:</strong> <%= current_user.phone %></p>
-        <% end %>
+	  
+     <div class="card-body">
+  <% unless @current_event.rsvp_deadline && @current_event.rsvp_deadline < Time.current %>
+    <%= form_with url: update_rsvp_path(@current_event.id), method: :patch, local: true do |form| %>
+      <div class="btn-group d-flex mb-3" role="group">
+        <%= form.submit "Yes", name: "status", value: "yes", 
+            class: "btn #{ (@user_rsvp_status.to_s == 'yes' || @user_rsvp_status.to_s == '1') ? 'btn-success' : 'btn-outline-success' } flex-fill" %>
+        <%= form.submit "Maybe", name: "status", value: "maybe", 
+            class: "btn #{ (@user_rsvp_status.to_s == 'maybe' || @user_rsvp_status.to_s == '3') ? 'btn-warning' : 'btn-outline-warning' } flex-fill" %>
+        <%= form.submit "No", name: "status", value: "no", 
+            class: "btn #{ (@user_rsvp_status.to_s == 'no' || @user_rsvp_status.to_s == '2') ? 'btn-danger' : 'btn-outline-danger' } flex-fill" %>
       </div>
-    </div>
+    <% end %>
+  <% else %>
+    <p class="text-muted">RSVP deadline has passed</p>
+  <% end %>
+</div>
+	
+	
 
     <% if defined?(@my_events) && @my_events&.any? %>
       <div class="card">

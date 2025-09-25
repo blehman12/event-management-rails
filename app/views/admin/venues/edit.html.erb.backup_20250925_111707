@@ -10,7 +10,8 @@
 
 <div class="mt-4 text-center">
   <% if @venue.events.empty? %>
-    <%= button_to "Delete Venue", admin_venue_path(@venue), method: :delete, form_class: "d-inline", confirm: "Are you sure?", class: "btn btn-danger" %>
+    <%= link_to "Delete Venue", admin_venue_path(@venue), method: :delete, 
+                confirm: "Are you sure?", class: "btn btn-danger" %>
   <% else %>
     <p class="text-muted">Cannot delete venue with existing events.</p>
   <% end %>

@@ -26,6 +26,8 @@ gem "kaminari"
 
 # UI
 gem "bootstrap", "~> 5.3"
+gem 'simple_form'
+
 
 # Add to your Gemfile:
 group :development, :test do
@@ -39,6 +41,7 @@ group :development, :test do
   gem "database_cleaner-active_record"  # Add this
   gem "rails-controller-testing"  # Add this
   gem "dotenv-rails"
+  gem 'faker'
 
 end
 

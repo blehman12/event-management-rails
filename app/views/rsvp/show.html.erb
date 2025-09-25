@@ -1,157 +1,129 @@
-<div class="container mt-4">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <% if @current_event %>
-        <!-- Event Details Card -->
-        <div class="card mb-4">
-          <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><%= @current_event.name %></h4>
-          </div>
-          <div class="card-body">
-            <p><strong>Date:</strong> <%= @current_event.event_date.strftime("%A, %B %d, %Y") %></p>
-            <% if @current_event.start_time %>
-              <p><strong>Time:</strong> <%= @current_event.start_time.strftime("%I:%M %p") %> - <%= @current_event.end_time&.strftime("%I:%M %p") %></p>
-            <% end %>
-            <% if @current_event.venue %>
-              <p><strong>Location:</strong> <%= @current_event.venue.name %></p>
-              <p><strong>Address:</strong> <%= @current_event.venue.address %></p>
-            <% end %>
-            <% if @current_event.rsvp_deadline %>
-              <p><strong>RSVP Deadline:</strong> <%= @current_event.rsvp_deadline.strftime("%B %d, %Y at %I:%M %p") %></p>
-            <% end %>
-            <% if @current_event.description.present? %>
-              <p><strong>Description:</strong> <%= simple_format(@current_event.description) %></p>
-            <% end %>
-          </div>
+<div class="row">
+  <div class="col-md-8">
+    <% if defined?(@current_event) && @current_event %>
+      <!-- Event Details Card -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between">
+          <h4><%= @current_event.name %></h4>
+          <% if defined?(@my_role) && @my_role == 'vendor' %>
+            <span class="badge bg-warning">Vendor</span>
+          <% elsif defined?(@my_role) && @my_role == 'organizer' %>
+            <span class="badge bg-success">Organizer</span>
+          <% end %>
         </div>
+        <div class="card-body">
+          <p><strong>Date:</strong> <%= @current_event.event_date&.strftime("%A, %B %d, %Y") %></p>
+          <% if @current_event.respond_to?(:start_time) && @current_event.start_time %>
+            <p><strong>Time:</strong> <%= @current_event.start_time.strftime("%I:%M %p") %> - <%= @current_event.end_time&.strftime("%I:%M %p") %></p>
+          <% end %>
+          <% if @current_event.venue %>
+            <p><strong>Location:</strong> <%= @current_event.venue.respond_to?(:full_address) ? @current_event.venue.full_address : @current_event.venue.address %></p>
+          <% end %>
+          <% if @current_event.rsvp_deadline %>
+            <p><strong>RSVP Deadline:</strong> <%= @current_event.rsvp_deadline.strftime("%B %d, %Y at %I:%M %p") %></p>
+          <% end %>
+          <% if @current_event.description.present? %>
+            <p><strong>Description:</strong> <%= simple_format(@current_event.description) %></p>
+          <% end %>
+        </div>
+      </div>
 
-        <!-- RSVP Form Card -->
-        <div class="card">
-          <div class="card-header">
-            <h5 class="mb-0">Your RSVP Status: 
-              <% 
-                status_class = case @user_rsvp_status.to_s
-                             when 'yes', '1' then 'success'
-                             when 'maybe', '3' then 'warning' 
-                             when 'no', '2' then 'danger'
-                             else 'secondary'
-                             end
-              %>
-              <span class="badge bg-<%= status_class %>">
-                <%= @user_rsvp_status.humanize %>
-              </span>
-            </h5>
-          </div>
-          <div class="card-body">
-            <% unless @current_event.rsvp_deadline && @current_event.rsvp_deadline < Time.current %>
-			  <%= form_with url: update_rsvp_path(@current_event), method: :patch, local: true, id: 'rsvp-form' do |form| %>
+      <!-- RSVP Status and Action Card -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Your RSVP Status: 
+            <% 
+              status_class = case @user_rsvp_status.to_s
+                           when 'yes', '1' then 'success'
+                           when 'maybe', '3' then 'warning' 
+                           when 'no', '2' then 'danger'
+                           else 'secondary'
+                           end
+            %>
+            <span class="badge bg-<%= status_class %>">
+              <%= @user_rsvp_status.respond_to?(:humanize) ? @user_rsvp_status.humanize : @user_rsvp_status.to_s.humanize %>
+            </span>
+          </h5>
+        </div>
+        <div class="card-body">
+          <% unless @current_event.rsvp_deadline && @current_event.rsvp_deadline < Time.current %>
+            <%= form_with url: update_rsvp_path(@current_event.id), method: :patch, local: true do |form| %>
+              <!-- RSVP Action Buttons -->
+              <div class="btn-group d-flex mb-3" role="group">
+                <%= form.submit "Yes", name: "status", value: "yes", 
+                    class: "btn #{ (@user_rsvp_status.to_s == 'yes' || @user_rsvp_status.to_s == '1') ? 'btn-success' : 'btn-outline-success' } flex-fill" %>
+                <%= form.submit "Maybe", name: "status", value: "maybe", 
+                    class: "btn #{ (@user_rsvp_status.to_s == 'maybe' || @user_rsvp_status.to_s == '3') ? 'btn-warning' : 'btn-outline-warning' } flex-fill" %>
+                <%= form.submit "No", name: "status", value: "no", 
+                    class: "btn #{ (@user_rsvp_status.to_s == 'no' || @user_rsvp_status.to_s == '2') ? 'btn-danger' : 'btn-outline-danger' } flex-fill" %>
+              </div>
 
-                
-                <!-- RSVP Status Buttons -->
-                <div class="mb-4">
-                  <label class="form-label fw-bold">Will you attend?</label>
-                  <div class="btn-group d-flex" role="group">
-                    <%= form.radio_button :status, 'yes', 
-                          class: 'd-none rsvp-radio', 
-                          checked: (@user_rsvp_status.to_s == 'yes' || @user_rsvp_status.to_s == '1') %>
-                    <label for="rsvp_status_yes" 
-                           class="btn <%= (@user_rsvp_status.to_s == 'yes' || @user_rsvp_status.to_s == '1') ? 'btn-success' : 'btn-outline-success' %> flex-fill">
-                      Yes
-                    </label>
-                    
-                    <%= form.radio_button :status, 'maybe', 
-                          class: 'd-none rsvp-radio',
-                          checked: (@user_rsvp_status.to_s == 'maybe' || @user_rsvp_status.to_s == '3') %>
-                    <label for="rsvp_status_maybe" 
-                           class="btn <%= (@user_rsvp_status.to_s == 'maybe' || @user_rsvp_status.to_s == '3') ? 'btn-warning' : 'btn-outline-warning' %> flex-fill">
-                      Maybe
-                    </label>
-                    
-                    <%= form.radio_button :status, 'no', 
-                          class: 'd-none rsvp-radio',
-                          checked: (@user_rsvp_status.to_s == 'no' || @user_rsvp_status.to_s == '2') %>
-                    <label for="rsvp_status_no" 
-                           class="btn <%= (@user_rsvp_status.to_s == 'no' || @user_rsvp_status.to_s == '2') ? 'btn-danger' : 'btn-outline-danger' %> flex-fill">
-                      No
-                    </label>
-                  </div>
-                </div>
-
-                <!-- Custom Questions Section -->
-                <% if @current_event.custom_questions.present? %>
-                  <div class="mb-4">
-                    <h6 class="fw-bold">Additional Information</h6>
-                    <% @current_event.custom_questions.each_with_index do |question, index| %>
-                      <div class="mb-3">
-                        <label class="form-label"><%= question %></label>
-                        <%= form.text_area "rsvp_answers[question_#{index}]", 
-                              value: (@participant&.rsvp_answers&.dig("question_#{index}") || ''),
-                              class: "form-control",
-                              rows: 2,
-                              placeholder: "Your answer..." %>
-                      </div>
-                    <% end %>
-                  </div>
-                <% end %>
-
-                <!-- Submit Button -->
-                <div class="d-grid">
-                  <%= form.submit "Update RSVP", class: "btn btn-primary btn-lg" %>
+              <!-- Link to full RSVP page if custom questions exist -->
+              <% if @current_event.custom_questions.present? %>
+                <div class="text-center">
+                  <%= link_to "Answer Additional Questions", event_rsvp_path(@current_event), 
+                      class: "btn btn-outline-primary btn-sm" %>
                 </div>
               <% end %>
-
-              <div class="mt-3 text-center">
-                <small class="text-muted">
-                  <% if @current_event.rsvp_deadline && @current_event.rsvp_deadline > Time.current %>
-                    <% days_left = ((@current_event.rsvp_deadline - Time.current) / 1.day).ceil %>
-                    <%= pluralize(days_left, 'day') %> left to RSVP
-                  <% end %>
-                </small>
-              </div>
-            <% else %>
-              <div class="alert alert-warning">
-                <h6>RSVP Deadline Passed</h6>
-                <p class="mb-0">The RSVP deadline for this event has passed. Please contact the event organizer if you need to make changes.</p>
-              </div>
             <% end %>
-          </div>
+          <% else %>
+            <div class="alert alert-warning">
+              <small>RSVP deadline has passed</small>
+            </div>
+          <% end %>
         </div>
+      </div>
 
-      <% else %>
-        <div class="alert alert-info">
-          <h5>No Active Events</h5>
-          <p class="mb-0">There are currently no events available for RSVP.</p>
-        </div>
-      <% end %>
+    <% else %>
+      <div class="alert alert-info">
+        <h4>Event details coming soon!</h4>
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="col-md-4">
+    <!-- User Profile Card -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5>Your Profile</h5>
+      </div>
+      <div class="card-body">
+        <p><strong>Name:</strong> <%= current_user.respond_to?(:full_name) ? current_user.full_name : "#{current_user.first_name} #{current_user.last_name}" %></p>
+        <p><strong>Email:</strong> <%= current_user.email %></p>
+        <p><strong>Company:</strong> <%= current_user.company %></p>
+        <% if current_user.phone %>
+          <p><strong>Phone:</strong> <%= current_user.phone %></p>
+        <% end %>
+      </div>
     </div>
+
+    <!-- My Events Card -->
+    <% if defined?(@my_events) && @my_events&.any? %>
+      <div class="card">
+        <div class="card-header">
+          <h6>My Events</h6>
+        </div>
+        <div class="card-body">
+          <% @my_events.each do |event| %>
+            <% participant = current_user.event_participants.find_by(event: event) if current_user.respond_to?(:event_participants) %>
+            <div class="mb-2">
+              <strong><%= event.name %></strong><br>
+              <small class="text-muted"><%= event.event_date&.strftime("%b %d") %></small>
+              <% if participant %>
+                <br>
+                <span class="badge bg-<%= (participant.rsvp_status.to_s == 'yes' || participant.rsvp_status.to_s == '1') ? 'success' : 'secondary' %>">
+                  <%= participant.rsvp_status.respond_to?(:humanize) ? participant.rsvp_status.humanize : participant.rsvp_status.to_s.humanize %>
+                </span>
+                <% if participant.role.to_s == 'vendor' || participant.role.to_s == '1' %>
+                  <span class="badge bg-warning">Vendor</span>
+                <% elsif participant.role.to_s == 'organizer' || participant.role.to_s == '2' %>
+                  <span class="badge bg-success">Organizer</span>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Handle radio button styling
-  const radioButtons = document.querySelectorAll('.rsvp-radio');
-  const labels = document.querySelectorAll('label[for^="rsvp_status"]');
-  
-  labels.forEach(label => {
-    label.addEventListener('click', function() {
-      // Remove active classes from all labels
-      labels.forEach(l => {
-        l.className = l.className.replace(/btn-success|btn-warning|btn-danger/, 
-                                         l.className.includes('success') ? 'btn-outline-success' :
-                                         l.className.includes('warning') ? 'btn-outline-warning' :
-                                         'btn-outline-danger');
-      });
-      
-      // Add active class to clicked label
-      if (this.getAttribute('for') === 'rsvp_status_yes') {
-        this.className = this.className.replace('btn-outline-success', 'btn-success');
-      } else if (this.getAttribute('for') === 'rsvp_status_maybe') {
-        this.className = this.className.replace('btn-outline-warning', 'btn-warning');
-      } else if (this.getAttribute('for') === 'rsvp_status_no') {
-        this.className = this.className.replace('btn-outline-danger', 'btn-danger');
-      }
-    });
-  });
-});
-</script>

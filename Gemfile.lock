@@ -129,6 +129,8 @@ GEM
     factory_bot_rails (6.5.1)
       factory_bot (~> 6.5)
       railties (>= 6.1.0)
+    faker (3.5.2)
+      i18n (>= 1.8.11, < 2)
     ffi (1.17.2-aarch64-linux-gnu)
     ffi (1.17.2-aarch64-linux-musl)
     ffi (1.17.2-arm-linux-gnu)
@@ -324,6 +326,9 @@ GEM
       websocket (~> 1.0)
     shoulda-matchers (6.5.0)
       activesupport (>= 5.2.0)
+    simple_form (5.3.1)
+      actionpack (>= 5.2)
+      activemodel (>= 5.2)
     sprockets (4.2.2)
       concurrent-ruby (~> 1.0)
       logger
@@ -384,6 +389,7 @@ DEPENDENCIES
   devise
   dotenv-rails
   factory_bot_rails
+  faker
   image_processing (~> 1.2)
   importmap-rails
   jbuilder
@@ -397,6 +403,7 @@ DEPENDENCIES
   sassc-rails
   selenium-webdriver
   shoulda-matchers
+  simple_form
   sprockets-rails (>= 2.0.0)
   sqlite3 (~> 1.4)
   stimulus-rails

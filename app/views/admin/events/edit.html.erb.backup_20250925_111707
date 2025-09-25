@@ -9,6 +9,7 @@
 <%= render 'form', event: @event %>
 
 <div class="mt-4 text-center">
-			  <%= button_to "Delete Event", admin_event_path(@event), method: :delete, form_class: "d-inline", confirm: "Are you sure? This will also remove all participants.", class: "btn btn-danger" %>
-
+  <%= link_to "Delete Event", admin_event_path(@event), method: :delete, 
+              confirm: "Are you sure? This will also remove all participants.", 
+              class: "btn btn-danger" %>
 </div>

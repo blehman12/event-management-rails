@@ -44,9 +44,13 @@
                     <%= link_to "View", admin_event_path(event), class: "btn btn-outline-primary" %>
                     <%= link_to "Edit", edit_admin_event_path(event), class: "btn btn-outline-secondary" %>
 					<%= link_to "Participants", admin_event_path(event), class: "btn btn-outline-info" %>
-                    <%= link_to "Delete", admin_event_path(event), method: :delete, 
-                                confirm: "Are you sure? This will remove all participants.", 
-                                class: "btn btn-outline-danger" %>
+					
+                
+					<%= button_to "Delete", admin_event_path(event), method: :delete, 
+                              confirm: "Are you sure? This will remove all participants.", 
+                              class: "btn btn-outline-danger",
+                               form_class: "d-inline" %>
+			  
                   </div>
                 </td>
               </tr>

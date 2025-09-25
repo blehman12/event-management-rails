@@ -22,6 +22,8 @@ Rails.application.routes.draw do
   # RSVP routes
   get 'rsvp/:event_id', to: 'rsvp#show', as: 'event_rsvp'
   patch 'rsvp/:event_id', to: 'rsvp#update', as: 'update_rsvp'
+  patch 'rsvp/:status', to: 'rsvp#update', as: :rsvp
+
 
   # Check-in routes (public - no authentication required for basic access)
   get 'checkin', to: 'checkin#index'
@@ -50,7 +52,7 @@ Rails.application.routes.draw do
     resources :users do
       member do
         patch 'toggle_admin'
-        delete 'destroy'
+#        delete 'destroy'
       end
       collection do
         # OLD bulk actions route is now redirected above
