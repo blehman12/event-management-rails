@@ -86,7 +86,7 @@
                 <td><%= participant.event.event_date&.strftime("%b %d, %Y") %></td>
                 <td>
                   <span class="badge bg-<%= participant.organizer? ? 'success' : participant.vendor? ? 'warning' : 'secondary' %>">
-                    <%= participant.role.humanize %>
+					<%= participant.role&.humanize || 'N/A' %>
                   </span>
                 </td>
                 <td>
