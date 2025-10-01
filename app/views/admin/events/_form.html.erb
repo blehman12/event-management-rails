@@ -102,13 +102,21 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+// Listen for both initial page load AND Turbo page loads
+document.addEventListener('DOMContentLoaded', initCustomQuestions);
+document.addEventListener('turbo:load', initCustomQuestions);
+
+function initCustomQuestions() {
   const container = document.getElementById('custom-questions-container');
   const addButton = document.getElementById('add-question');
 
   if (addButton && container) {
+    // Remove any existing listeners to prevent duplicates
+    const newAddButton = addButton.cloneNode(true);
+    addButton.parentNode.replaceChild(newAddButton, addButton);
+    
     // Add new question
-    addButton.addEventListener('click', function(e) {
+    newAddButton.addEventListener('click', function(e) {
       e.preventDefault();
       
       const questionRow = document.createElement('div');
@@ -130,5 +138,5 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-});
+}
 </script>
